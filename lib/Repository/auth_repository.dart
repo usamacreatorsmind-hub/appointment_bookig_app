@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import '../models/user_model.dart';
 import 'FirestoreService.dart';
 
@@ -76,6 +77,45 @@ class AuthRepository {
   // Get User Data by Mobile
   Future<UserModel?> getUserByMobile(String mobile) async {
     return await _firestoreService.getUserByMobile(mobile);
+  }
+
+  // MSG91 Send OTP
+  Future<void> sendMsg91Otp(String mobile) async {
+    final functions = FirebaseFunctions.instance;
+    final HttpsCallable callable = functions.httpsCallable('sendMsg91Otp');
+    String formattedMobile = _formatMobileForMsg91(mobile);
+    await callable.call({'mobile': formattedMobile});
+  }
+
+  // MSG91 Verify OTP
+  Future<Map<String, dynamic>> verifyMsg91Otp(String mobile, String otp) async {
+    final functions = FirebaseFunctions.instance;
+    final HttpsCallable callable = functions.httpsCallable('verifyMsg91Otp');
+    String formattedMobile = _formatMobileForMsg91(mobile);
+    final result = await callable.call({'mobile': formattedMobile, 'otp': otp.trim()});
+    return Map<String, dynamic>.from(result.data);
+  }
+
+  String _formatMobileForMsg91(String mobile) {
+    // Remove all non-digits
+    String digits = mobile.replaceAll(RegExp(r'\D'), '');
+    
+    // If it's already 12 digits starting with 91, don't add it again
+    if (digits.length == 12 && digits.startsWith('91')) {
+      return digits;
+    }
+    
+    // If it's 10 digits, add 91
+    if (digits.length == 10) {
+      return '91$digits';
+    }
+    
+    return digits;
+  }
+
+  // Sign In with Custom Token
+  Future<UserCredential> signInWithCustomToken(String token) async {
+    return await _auth.signInWithCustomToken(token);
   }
 
   // Migrate user record to Auth UID

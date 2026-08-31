@@ -336,10 +336,38 @@ class ReceptionistDashboardScreen extends GetView<ReceptionistDashboardControlle
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(appt.patientName ?? 'Patient', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              Row(
+                                children: [
+                                  Text(appt.patientName ?? 'Patient', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  const SizedBox(width: 6),
+                                  if (appt.patientType != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: appt.patientType == 'New' ? Colors.orange.shade50 : Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        appt.patientType == 'New' ? 'N' : 'O',
+                                        style: TextStyle(
+                                          color: appt.patientType == 'New' ? Colors.orange.shade700 : Colors.blue.shade700,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                               const SizedBox(height: 2),
                               Row(
                                 children: [
+                                  if (appt.tokenNumber != null) ...[
+                                    Text(
+                                      '#${appt.tokenNumber.toString().padLeft(2, '0')}',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
                                   const Icon(Icons.access_time_rounded, size: 12, color: AppColors.textSecondary),
                                   const SizedBox(width: 4),
                                   Text(appt.timeSlot, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),

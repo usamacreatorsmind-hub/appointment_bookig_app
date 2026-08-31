@@ -189,6 +189,30 @@ class _AppointmentCard extends StatelessWidget {
               _infoItem(Icons.location_on_rounded, appointment.consultationType),
             ],
           ),
+          if (appointment.paymentStatus == 'Booking Charge Paid' || (appointment.bookingCharge ?? 0) > 0) ...[
+            const Divider(height: 24, thickness: 0.5),
+            Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
+                const SizedBox(width: 4),
+                Text(
+                  'Slot Fee Paid: ₹${appointment.bookingCharge?.toInt() ?? 0}',
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+                const Spacer(),
+                if (appointment.transactionId != null)
+                  Text(
+                    'TXN: ${appointment.transactionId}',
+                    style: const TextStyle(fontSize: 10, color: AppColors.textHint),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Balance to be paid in cash at clinic: ₹${appointment.fee.toInt()}',
+              style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600),
+            ),
+          ],
           if (!isPast && (appointment.status == 'Pending' || appointment.status == 'Confirmed')) ...[
             const SizedBox(height: 16),
             SizedBox(

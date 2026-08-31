@@ -71,35 +71,24 @@ class RegisterController extends GetxController {
     update();
 
     try {
-      await _authRepository.verifyPhoneNumber(
-        mobileController.text.trim(),
-        verificationCompleted: (PhoneAuthCredential credential) {},
-        verificationFailed: (FirebaseAuthException e) {
-          isLoading.value = false;
-          update();
-          AppSnackBar.show(e.message ?? 'Verification failed');
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          isLoading.value = false;
-          update();
+      await _authRepository.sendMsg91Otp(mobileController.text.trim());
+      isLoading.value = false;
+      update();
 
-          Get.toNamed(
-            AppRoutes.otpVerification,
-            arguments: {
-              'mobile': mobileController.text.trim(),
-              'name': nameController.text.trim(),
-              'email': emailController.text.trim(),
-              'password': passwordController.text.trim(),
-              'role': LoginRole.patient,
-              'isLogin': false,
-              'verificationId': verificationId,
-              'dob': dobController.text,
-              'gender': selectedGender.value.name,
-              'bloodGroup': selectedBloodGroup.value,
-            },
-          );
+      Get.toNamed(
+        AppRoutes.otpVerification,
+        arguments: {
+          'mobile': mobileController.text.trim(),
+          'name': nameController.text.trim(),
+          'email': emailController.text.trim(),
+          'password': passwordController.text.trim(),
+          'role': LoginRole.patient,
+          'isLogin': false,
+          'isMsg91': true,
+          'dob': dobController.text,
+          'gender': selectedGender.value.name,
+          'bloodGroup': selectedBloodGroup.value,
         },
-        codeAutoRetrievalTimeout: (String vId) {},
       );
     } catch (e) {
       isLoading.value = false;

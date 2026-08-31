@@ -66,6 +66,8 @@ class HospitalDashboardScreen extends GetView<HospitalDashboardController> {
           padding: const EdgeInsets.all(16),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
+              _buildDateSelector(),
+              const SizedBox(height: 20),
               _buildStatCards(),
               const SizedBox(height: 24),
               _buildJoinRequestsSection(),
@@ -77,6 +79,73 @@ class HospitalDashboardScreen extends GetView<HospitalDashboardController> {
         ),
       ],
     );
+  }
+
+  Widget _buildDateSelector() {
+    return Obx(() {
+      final startStr = controller.startDate.value.toIso8601String().split('T')[0];
+      final endStr = controller.endDate.value.toIso8601String().split('T')[0];
+      final isSingleDay = startStr == endStr;
+      final isToday = isSingleDay && startStr == DateTime.now().toIso8601String().split('T')[0];
+
+      String label = isToday ? "Today's Overview" : "Custom Range Overview";
+      if (isSingleDay && !isToday) label = "Stats for ${controller.startDate.value.day}/${controller.startDate.value.month}";
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          InkWell(
+            onTap: () async {
+              final picked = await showDateRangePicker(
+                context: Get.context!,
+                firstDate: DateTime(2023),
+                lastDate: DateTime.now().add(const Duration(days: 365)),
+                initialDateRange: DateTimeRange(
+                  start: controller.startDate.value,
+                  end: controller.endDate.value,
+                ),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: AppColors.primary,
+                        onPrimary: Colors.white,
+                        onSurface: AppColors.textPrimary,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (picked != null) {
+                controller.updateDateRange(picked.start, picked.end);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              child: Row(
+                children: [
+                  const Icon(Icons.date_range_rounded, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Text(
+                    isToday ? "Filter Range" : (isSingleDay ? startStr : "$startStr to $endStr"),
+                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildDoctorsTab() {
@@ -123,7 +192,17 @@ class HospitalDashboardScreen extends GetView<HospitalDashboardController> {
           padding: const EdgeInsets.all(16),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              _buildSectionHeader('Today\'s Appointments', onAction: controller.goToAllAppointments, actionLabel: 'Full History'),
+              Obx(() {
+                final startStr = controller.startDate.value.toIso8601String().split('T')[0];
+                final endStr = controller.endDate.value.toIso8601String().split('T')[0];
+                final isSingleDay = startStr == endStr;
+
+                return _buildSectionHeader(
+                  isSingleDay ? 'Appointments for $startStr' : 'Appointments: $startStr to $endStr',
+                  onAction: controller.goToAllAppointments,
+                  actionLabel: 'Full History',
+                );
+              }),
               const SizedBox(height: 12),
               _buildAppointmentsList(),
             ]),
@@ -353,48 +432,54 @@ class HospitalDashboardScreen extends GetView<HospitalDashboardController> {
   }
 
   Widget _buildStatCards() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _statCard('Total Doctors', controller.doctors.length.toString(), Icons.people_alt_rounded, const Color(0xFF42A5F5)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _statCard(
-                'Active Doctors',
-                controller.activeDoctorsCount.value.toString(),
-                Icons.verified_user_rounded,
-                const Color(0xFF66BB6A),
+    return Obx(() {
+      final startStr = controller.startDate.value.toIso8601String().split('T')[0];
+      final endStr = controller.endDate.value.toIso8601String().split('T')[0];
+      final isToday = startStr == endStr && startStr == DateTime.now().toIso8601String().split('T')[0];
+
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _statCard('Total Doctors', controller.doctors.length.toString(), Icons.people_alt_rounded, const Color(0xFF42A5F5)),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _statCard(
-                'Today\'s Appts',
-                controller.todayAppointments.length.toString(),
-                Icons.calendar_today_rounded,
-                const Color(0xFFFFA726),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _statCard(
+                  'Active Doctors',
+                  controller.activeDoctorsCount.value.toString(),
+                  Icons.verified_user_rounded,
+                  const Color(0xFF66BB6A),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _statCard(
-                'Today\'s Revenue',
-                '₹${controller.todayRevenue.value.toStringAsFixed(0)}',
-                Icons.account_balance_wallet_rounded,
-                const Color(0xFFEC407A),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _statCard(
+                  isToday ? 'Today\'s Appts' : 'Total Appts',
+                  controller.selectedDateAppointments.length.toString(),
+                  Icons.calendar_today_rounded,
+                  const Color(0xFFFFA726),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    );
+              const SizedBox(width: 12),
+              Expanded(
+                child: _statCard(
+                  isToday ? 'Today\'s Revenue' : 'Range Revenue',
+                  '₹${controller.selectedRangeRevenue.value.toStringAsFixed(0)}',
+                  Icons.account_balance_wallet_rounded,
+                  const Color(0xFFEC407A),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
   Widget _statCard(String label, String value, IconData icon, Color color) {
@@ -548,14 +633,14 @@ class HospitalDashboardScreen extends GetView<HospitalDashboardController> {
   }
 
   Widget _buildAppointmentsList() {
-    if (controller.todayAppointments.isEmpty) return _emptyState('No appointments for today');
+    if (controller.selectedDateAppointments.isEmpty) return _emptyState('No appointments for selected date');
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: controller.todayAppointments.length,
+      itemCount: controller.selectedDateAppointments.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final appt = controller.todayAppointments[index];
+        final appt = controller.selectedDateAppointments[index];
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(

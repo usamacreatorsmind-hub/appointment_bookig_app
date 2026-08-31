@@ -11,6 +11,8 @@ class DoctorReportsController extends GetxController {
   final isLoading = true.obs;
   final totalAppointments = 0.obs;
   final completedAppointments = 0.obs;
+  final onlineEarnings = 0.0.obs; // Razorpay (Slot Booking)
+  final cashEarnings = 0.0.obs;   // Expected/Collected Cash
   final totalEarnings = 0.0.obs;
 
   @override
@@ -34,14 +36,25 @@ class DoctorReportsController extends GetxController {
         
         totalAppointments.value = allAppts.length;
         completedAppointments.value = allAppts.where((a) => a.status == 'Completed').length;
-        
-        double earnings = 0;
+
+        double online = 0;
+        double cash = 0;
+
         for (var a in allAppts) {
+          // 1. Online Revenue (from all confirmed/completed bookings)
+          if (a.paymentStatus == 'Booking Charge Paid' || a.paymentStatus == 'Paid' || a.paymentStatus == 'Success') {
+            online += a.bookingCharge ?? 0;
+          }
+
+          // 2. Cash Revenue (only for completed ones)
           if (a.status == 'Completed' && (a.paymentStatus == 'Paid' || a.paymentStatus == 'Success')) {
-            earnings += a.fee;
+            cash += a.fee;
           }
         }
-        totalEarnings.value = earnings;
+
+        onlineEarnings.value = online;
+        cashEarnings.value = cash;
+        totalEarnings.value = online + cash;
       }
     } catch (e) {
       AppSnackBar.show('Failed to calculate reports: $e');

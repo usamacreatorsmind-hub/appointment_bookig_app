@@ -690,15 +690,47 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(appt.patientName ?? "Patient", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          Row(
+                            children: [
+                              Text(appt.patientName ?? "Patient", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                              const SizedBox(width: 8),
+                              if (appt.patientType != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: appt.patientType == 'New' ? Colors.orange.shade50 : Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    appt.patientType == 'New' ? 'N' : 'O',
+                                    style: TextStyle(
+                                      color: appt.patientType == 'New' ? Colors.orange.shade700 : Colors.blue.shade700,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                           if (!appt.isForSelf)
                             Text(
                               'For: ${appt.patientDetails?['relationship'] ?? 'Other'}',
                               style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
-                          Text(
-                            appt.timeSlot,
-                            style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+                          Row(
+                            children: [
+                              Text(
+                                appt.timeSlot,
+                                style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                              if (appt.tokenNumber != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  '· Serial: #${appt.tokenNumber.toString().padLeft(2, '0')}',
+                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
@@ -724,23 +756,7 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    if (appt.status == 'Pending') ...[
-                      TextButton(
-                        onPressed: () => controller.updateAppointmentStatus(appt.appointmentId, 'Cancelled'),
-                        child: const Text('Reject', style: TextStyle(color: Colors.red, fontSize: 13)),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () => controller.updateAppointmentStatus(appt.appointmentId, 'Confirmed'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Accept', style: TextStyle(fontSize: 13)),
-                      ),
-                    ] else if (appt.status == 'Confirmed' || appt.status == 'Arrived')
+                    if (appt.status == 'Confirmed' || appt.status == 'Arrived')
                       if (appt.status == 'Arrived' || _isTimePassed(appt.appointmentDate, appt.timeSlot))
                         ElevatedButton(
                           onPressed: () => Get.toNamed(AppRoutes.addPrescription, arguments: {'appointment': appt}),
@@ -898,6 +914,12 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
               ],
             ),
             const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(child: _detailItem(Icons.numbers_rounded, 'Serial Number', '#${appt.tokenNumber?.toString().padLeft(2, '0') ?? "N/A"}')),
+                Expanded(child: _detailItem(Icons.person_search_rounded, 'Patient Type', appt.patientType ?? 'New')),
+              ],
+            ),
             _detailItem(Icons.person_outline, 'Patient Name', appt.patientName ?? 'N/A'),
             _detailItem(Icons.people_outline, 'Relationship', '${appt.patientDetails?['relationship'] ?? 'Self'}'),
             _detailItem(

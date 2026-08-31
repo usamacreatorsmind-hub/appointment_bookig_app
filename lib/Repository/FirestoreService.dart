@@ -553,12 +553,15 @@ class FirestoreService {
     }
   }
 
-  Future<List<AppointmentModel>> getHospitalAppointments(String hospitalId, {String? date}) async {
+  Future<List<AppointmentModel>> getHospitalAppointments(String hospitalId, {String? date, String? startDate, String? endDate}) async {
     try {
       Query query = _appointments.where('hospitalId', isEqualTo: hospitalId);
 
       if (date != null && date.isNotEmpty) {
         query = query.where('appointmentDate', isEqualTo: date);
+      } else if (startDate != null && endDate != null) {
+        query = query.where('appointmentDate', isGreaterThanOrEqualTo: startDate)
+                     .where('appointmentDate', isLessThanOrEqualTo: endDate);
       }
 
       final snap = await query.get();
@@ -589,6 +592,17 @@ class FirestoreService {
 
   Future<void> updateAppointmentStatus(String appointmentId, String status) async {
     await _appointments.doc(appointmentId).update({'status': status, 'updatedAt': FieldValue.serverTimestamp()});
+  }
+
+  /// STREAM: Listen to real-time appointment updates for a doctor on a specific date.
+  Stream<List<AppointmentModel>> getDoctorAppointmentsStream(String doctorId, String date) {
+    return _appointments
+        .where('doctorId', isEqualTo: doctorId)
+        .where('appointmentDate', isEqualTo: date)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((d) => AppointmentModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
+    });
   }
 
   // ════════════════════════════════════════

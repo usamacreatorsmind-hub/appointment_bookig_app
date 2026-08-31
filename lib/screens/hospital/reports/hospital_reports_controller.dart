@@ -13,6 +13,8 @@ class HospitalReportsController extends GetxController {
   
   // Summary Stats
   final totalAppointments = 0.obs;
+  final onlineRevenue = 0.0.obs;
+  final cashRevenue = 0.0.obs;
   final totalRevenue = 0.0.obs;
   
   // Distribution Stats
@@ -55,7 +57,8 @@ class HospitalReportsController extends GetxController {
         
         totalAppointments.value = appts.length;
         
-        double revenue = 0;
+        double online = 0;
+        double cash = 0;
         Map<String, int> dStats = {};
         Map<String, int> deptStats = {};
         Map<String, int> sSummary = {
@@ -66,9 +69,14 @@ class HospitalReportsController extends GetxController {
         };
 
         for (var a in appts) {
-          // Revenue
-          if (a.paymentStatus == 'Paid' || a.paymentStatus == 'Success') {
-            revenue += a.fee;
+          // 1. Online Revenue (Razorpay Slot Charge)
+          if (a.paymentStatus == 'Booking Charge Paid' || a.paymentStatus == 'Paid' || a.paymentStatus == 'Success') {
+            online += a.bookingCharge ?? 0;
+          }
+
+          // 2. Cash Revenue (Consultation Fee)
+          if (a.status == 'Completed' && (a.paymentStatus == 'Paid' || a.paymentStatus == 'Success')) {
+            cash += a.fee;
           }
           
           // Status Summary
@@ -88,7 +96,9 @@ class HospitalReportsController extends GetxController {
           }
         }
         
-        totalRevenue.value = revenue;
+        onlineRevenue.value = online;
+        cashRevenue.value = cash;
+        totalRevenue.value = online + cash;
         doctorWiseStats.assignAll(dStats);
         deptWiseStats.assignAll(deptStats);
         statusSummary.assignAll(sSummary);

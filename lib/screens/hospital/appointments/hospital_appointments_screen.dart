@@ -189,8 +189,40 @@ class HospitalAppointmentsScreen extends GetView<HospitalAppointmentsController>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(appt.patientName ?? 'Patient Name', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text(appt.appointmentDate, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    Row(
+                      children: [
+                        Text(appt.patientName ?? 'Patient Name', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        const SizedBox(width: 8),
+                        if (appt.patientType != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: appt.patientType == 'New' ? Colors.orange.shade50 : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              appt.patientType == 'New' ? 'N' : 'O',
+                              style: TextStyle(
+                                color: appt.patientType == 'New' ? Colors.orange.shade700 : Colors.blue.shade700,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        if (appt.tokenNumber != null) ...[
+                          Text(
+                            '#${appt.tokenNumber.toString().padLeft(2, '0')}',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(appt.appointmentDate, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -216,11 +248,34 @@ class HospitalAppointmentsScreen extends GetView<HospitalAppointmentsController>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'ID: ${appt.appointmentId.substring(0, 8).toUpperCase()}',
-                style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ID: ${appt.appointmentId.substring(0, 8).toUpperCase()}',
+                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                  ),
+                  if (appt.transactionId != null)
+                    Text(
+                      'TXN: ${appt.transactionId}',
+                      style: const TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
+                ],
               ),
-              Text('Mode: ${appt.consultationType}', style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Mode: ${appt.consultationType}', style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                  Text(
+                    appt.paymentStatus == 'Booking Charge Paid' ? 'Online Paid' : appt.paymentStatus,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: appt.paymentStatus == 'Booking Charge Paid' ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ],

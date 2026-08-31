@@ -29,8 +29,6 @@ class PaymentScreen extends GetView<PaymentController> {
               children: [
                 _buildPaymentSummary(),
                 const SizedBox(height: 24),
-                _buildPaymentMethodSelector(),
-                const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -125,100 +123,6 @@ class PaymentScreen extends GetView<PaymentController> {
           style: TextStyle(color: textColor, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontSize: 14),
         ),
       ],
-    );
-  }
-
-  Widget _buildPaymentMethodSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Select Payment Method',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-        ),
-        const SizedBox(height: 16),
-        Obx(
-          () => Column(
-            children: [
-              _robustPaymentOption(
-                'UPI',
-                'Google Pay, PhonePe, etc.',
-                Icons.qr_code_rounded,
-                controller.selectedPaymentMethod.value == 'UPI',
-              ),
-              const SizedBox(height: 12),
-              _robustPaymentOption(
-                'Card',
-                'Debit or Credit Card',
-                Icons.credit_card_rounded,
-                controller.selectedPaymentMethod.value == 'Card',
-              ),
-              const SizedBox(height: 12),
-              _robustPaymentOption(
-                'Net Banking',
-                'All major banks',
-                Icons.account_balance_rounded,
-                controller.selectedPaymentMethod.value == 'Net Banking',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _robustPaymentOption(String title, String subtitle, IconData icon, bool isSelected) {
-    return GestureDetector(
-      onTap: () => controller.selectPaymentMethod(title),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.primaryBorder.withValues(alpha: 0.5),
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: isSelected ? AppColors.primary : AppColors.bgPage, borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: isSelected ? Colors.white : AppColors.textSecondary, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                    ),
-                  ),
-                  Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 24)
-            else
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primaryBorder),
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 

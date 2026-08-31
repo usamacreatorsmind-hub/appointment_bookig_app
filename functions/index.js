@@ -1,13 +1,46 @@
-const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
+const Razorpay = require("razorpay");
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Global options (Region aur Memory set karne ke liye)
+// Razorpay Initialization
+const razorpay = new Razorpay({
+    key_id: 'rzp_live_TUN2EGCy4mg6kn',
+    key_secret: 'NgzygHKv7CLzLStEm697eu1u',
+});
+
+// Global options
 setGlobalOptions({ region: "us-central1" });
+
+/**
+ * Trigger: Create Razorpay Order
+ */
+exports.createRazorpayOrder = onCall(async (request) => {
+    const amount = request.data.amount; // In Paisa (e.g. 5000 for ₹50)
+    const currency = request.data.currency || "INR";
+    const receipt = `receipt_${Date.now()}`;
+
+    if (!amount) {
+        throw new Error("Amount is required");
+    }
+
+    try {
+        const order = await razorpay.orders.create({
+            amount: amount,
+            currency: currency,
+            receipt: receipt,
+        });
+        return order;
+    } catch (error) {
+        console.error("Razorpay Order Error:", error);
+        throw new Error("Failed to create Razorpay order");
+    }
+});
 
 /**
  * Trigger: When an appointment status is updated
@@ -30,10 +63,149 @@ exports.onappointmentstatusupdate = onDocumentUpdated("appointments/{appointment
         const title = `Appointment ${status}`;
         const body = `Your appointment with Dr. ${doctorName} for ${newData.appointmentDate} is now ${status}.`;
 
-        return sendPushNotification(patientId, 'patientId', title, body, {
+        // 1. Notify Patient
+        await sendPushNotification(patientId, 'patientId', title, body, {
             type: 'appointment_status',
             appointmentId: event.params.appointmentId
         });
+
+        // 2. Notify Doctor if status becomes Confirmed (e.g. after payment)
+        if (status === 'Confirmed') {
+            const doctorUserSnap = await db.collection('users').where('doctorId', '==', doctorId).limit(1).get();
+            if (!doctorUserSnap.empty && doctorUserSnap.docs[0].data().fcmToken) {
+                await admin.messaging().send({
+                    notification: {
+                        title: 'New Booking Confirmed!',
+                        body: `Appointment confirmed for ${newData.appointmentDate} at ${newData.timeSlot}.`,
+                    },
+                    token: doctorUserSnap.docs[0].data().fcmToken,
+                    data: {
+                        type: 'new_booking',
+                        appointmentId: event.params.appointmentId,
+                        click_action: 'FLUTTER_NOTIFICATION_CLICK'
+                    }
+                });
+            }
+        }
+        return null;
+    }
+    return null;
+});
+
+const MSG91_AUTH_KEY = "566174ACoxByk72v6a955369P1";
+const MSG91_TEMPLATE_ID = "6a95551467221b0f4e010bb2";
+
+/**
+ * Trigger: Send OTP via MSG91
+ */
+exports.sendMsg91Otp = onCall(async (request) => {
+    let mobile = request.data.mobile;
+    if (!mobile) {
+        throw new HttpsError("invalid-argument", "Mobile number is required.");
+    }
+    mobile = mobile.toString().trim();
+
+    const url = `https://control.msg91.com/api/v5/otp?template_id=${MSG91_TEMPLATE_ID}&mobile=${mobile}&authkey=${MSG91_AUTH_KEY}`;
+
+    try {
+        const response = await fetch(url, { method: 'POST' });
+        const result = await response.json();
+        console.log(`Sent OTP to ${mobile}. Result:`, result);
+        if (result.type === "success") {
+            return { success: true, message: "OTP sent successfully" };
+        } else {
+            console.error("MSG91 Error:", result);
+            throw new HttpsError("internal", result.message || "Failed to send OTP.");
+        }
+    } catch (error) {
+        console.error("Fetch Error:", error);
+        throw new HttpsError("internal", "Failed to communicate with SMS service.");
+    }
+});
+
+/**
+ * Trigger: Verify OTP via MSG91 and return Firebase Custom Token
+ */
+exports.verifyMsg91Otp = onCall(async (request) => {
+    let mobile = request.data.mobile;
+    let otp = request.data.otp;
+
+    if (!mobile || !otp) {
+        throw new HttpsError("invalid-argument", "Mobile number and OTP are required.");
+    }
+    mobile = mobile.toString().trim();
+    otp = otp.toString().trim();
+
+    // Use URLSearchParams for safe encoding
+    const params = new URLSearchParams({
+        otp: otp,
+        mobile: mobile,
+        authkey: MSG91_AUTH_KEY
+    });
+
+    const url = `https://control.msg91.com/api/v5/otp/verify?${params.toString()}`;
+
+    try {
+        console.log(`Verifying OTP for ${mobile}.`);
+        const response = await fetch(url, { method: 'GET' });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("MSG91 API Error:", response.status, errorText);
+            throw new HttpsError("internal", `SMS Gateway Error: ${response.status}`, errorText);
+        }
+
+        const result = await response.json();
+        console.log(`MSG91 Response for ${mobile}:`, JSON.stringify(result));
+
+        if (result.type === "success") {
+            // OTP verified.
+            let mobileForSearch = mobile;
+            if (mobile.startsWith("91") && mobile.length === 12) {
+                mobileForSearch = mobile.substring(2);
+            }
+
+            console.log(`Step 1: Searching for user with mobile: ${mobileForSearch}`);
+            try {
+                const userSnap = await db.collection('users').where('mobile', '==', mobileForSearch).limit(1).get();
+
+                if (!userSnap.empty) {
+                    const userId = userSnap.docs[0].id;
+                    console.log(`Step 2: User found (ID: ${userId}). Creating custom token...`);
+                    const customToken = await admin.auth().createCustomToken(userId);
+                    console.log(`Step 3: Token created successfully.`);
+                    return { success: true, customToken: customToken, isRegistered: true };
+                } else {
+                    console.log("Step 2: User not found in Firestore users collection.");
+                    return { success: true, isRegistered: false };
+                }
+            } catch (dbError) {
+                console.error("Firestore/Auth Error:", dbError);
+                throw new HttpsError("internal", "Database error occurred after verification.", dbError.message);
+            }
+        } else {
+            console.error("MSG91 Verify Logic Error:", result);
+            const msg = result.message || "Invalid OTP. Please enter the correct code.";
+            throw new HttpsError("unauthenticated", msg);
+        }
+    } catch (error) {
+        if (error instanceof HttpsError) throw error;
+        console.error("Fetch/Process Error:", error);
+        throw new HttpsError("internal", "Verification failed. Please try again later.", error.message);
+    }
+});
+
+/**
+ * Trigger: When a user document is deleted from Firestore,
+ * cleanup their Firebase Auth account automatically.
+ */
+exports.cleanupauthonuserdelete = onDocumentDeleted("users/{userId}", async (event) => {
+    const userId = event.params.userId;
+    try {
+        await admin.auth().deleteUser(userId);
+        console.log(`Successfully deleted auth user: ${userId}`);
+    } catch (error) {
+        console.error(`Error deleting auth user: ${userId}`, error);
     }
     return null;
 });
@@ -55,6 +227,13 @@ exports.onnewappointmentbooked = onDocumentCreated("appointments/{appointmentId}
 
     const doctorName = doctorData ? doctorData.name : 'Doctor';
     const patientName = patientData ? patientData.name : 'Patient';
+
+    // ONLY notify if the appointment is already Confirmed (e.g. Walk-in by receptionist)
+    // If it's Pending (awaiting payment), skip notification for now.
+    if (appointment.status !== 'Confirmed') {
+        console.log(`Skipping notification for ${appointmentId} as it is in ${appointment.status} status.`);
+        return null;
+    }
 
     // 1. Notify Doctor
     if (doctorData && doctorData.fcmToken) {

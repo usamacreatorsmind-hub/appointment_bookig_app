@@ -1,3 +1,5 @@
+
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:doctor_app/Repository/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,14 +20,15 @@ class DoctorDashboardController extends GetxController {
   FirestoreService get firestoreService => _firestoreService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final AuthRepository _authRepository = AuthRepository();
-  
+
   final scrollController = ScrollController();
-  
+  StreamSubscription? _appointmentsSubscription;
+
   final isLoading = false.obs;
   final isAppointmentsLoading = false.obs;
   final isLoadMore = false.obs;
   final currentIndex = 0.obs;
-  
+
   final doctorProfile = Rxn<DoctorModel>();
   final appointments = <AppointmentModel>[].obs;
   final receptionists = <UserModel>[].obs;
@@ -42,15 +45,15 @@ class DoctorDashboardController extends GetxController {
   final confirmedTodayCount = 0.obs;
   final pendingTodayCount = 0.obs;
   final totalTodayCount = 0.obs;
-  
+
   // Pagination
   DocumentSnapshot? lastDocument;
   final hasMore = true.obs;
   final int limit = 10;
-  
+
   // Reactive selected date string
   final selectedDate = "".obs;
-  
+
   // Stable list of dates for the selector (Next 14 days)
   final dateList = <DateTime>[].obs;
 
@@ -59,13 +62,13 @@ class DoctorDashboardController extends GetxController {
     super.onInit();
     _generateDates();
     selectedDate.value = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     scrollController.addListener(() {
       if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
         loadMoreAppointments();
       }
     });
-    
+
     loadDashboardData();
   }
 
@@ -85,7 +88,7 @@ class DoctorDashboardController extends GetxController {
       final profile = await _firestoreService.getDoctorByUid(user.uid);
       if (profile != null) {
         doctorProfile.value = profile;
-        
+
         // Robust Hospital ID Fallback
         if (doctorProfile.value!.hospitalId.isEmpty) {
           final userModel = await _firestoreService.getUser(user.uid);
@@ -100,10 +103,7 @@ class DoctorDashboardController extends GetxController {
           }
         }
 
-        await Future.wait([
-          loadAppointments(selectedDate.value),
-          loadReceptionists(),
-        ]);
+        await Future.wait([loadAppointments(selectedDate.value), loadReceptionists()]);
       } else {
         AppSnackBar.show('Doctor profile not found in database.');
       }
@@ -117,40 +117,46 @@ class DoctorDashboardController extends GetxController {
 
   Future<void> loadAppointments(String date) async {
     selectedDate.value = date;
-    
+
     if (doctorProfile.value == null) return;
-    
+
     isAppointmentsLoading.value = true;
-    lastDocument = null;
-    hasMore.value = true;
-    appointments.clear();
     update();
-    
-    try {
-      final doctorId = doctorProfile.value!.doctorId;
-      final result = await _firestoreService.getDoctorAppointmentsPaginated(
-        doctorId, 
-        date: date,
-        limit: limit,
-      );
-      
-      final results = result['docs'] as List<AppointmentModel>;
-      lastDocument = result['lastDoc'] as DocumentSnapshot?;
-      hasMore.value = result['hasMore'] as bool;
-      
+
+    // Cancel previous subscription if any
+    await _appointmentsSubscription?.cancel();
+
+    // Listen to real-time updates
+    _appointmentsSubscription = _firestoreService
+        .getDoctorAppointmentsStream(doctorProfile.value!.doctorId, date)
+        .listen((results) async {
       List<AppointmentModel> enhancedAppts = [];
       for (var appt in results) {
+        // Hide 'Pending' appointments from the doctor until payment is confirmed
+        if (appt.status.toLowerCase() == 'pending') continue;
         enhancedAppts.add(await _enhanceAppointment(appt));
       }
-      
+
+      // Sort: Arrived first, then by token number, then by time
+      enhancedAppts.sort((a, b) {
+        if (a.status == 'Arrived' && b.status != 'Arrived') return -1;
+        if (a.status != 'Arrived' && b.status == 'Arrived') return 1;
+
+        if (a.tokenNumber != null && b.tokenNumber != null) {
+          return a.tokenNumber!.compareTo(b.tokenNumber!);
+        }
+        return a.timeSlot.compareTo(b.timeSlot);
+      });
+
       appointments.assignAll(enhancedAppts);
       _updateStats();
-    } catch (e) {
-      AppSnackBar.show('Failed to load appointments: $e');
-    } finally {
       isAppointmentsLoading.value = false;
       update();
-    }
+    }, onError: (e) {
+      isAppointmentsLoading.value = false;
+      AppSnackBar.show('Failed to listen to appointments: $e');
+      update();
+    });
   }
 
   Future<void> loadMoreAppointments() async {
@@ -173,10 +179,19 @@ class DoctorDashboardController extends GetxController {
 
       List<AppointmentModel> enhancedAppts = [];
       for (var appt in results) {
+        // Hide 'Pending' appointments from the doctor until payment is confirmed
+        if (appt.status.toLowerCase() == 'pending') continue;
         enhancedAppts.add(await _enhanceAppointment(appt));
       }
-      
+
       appointments.addAll(enhancedAppts);
+      // Re-sort entire list
+      appointments.sort((a, b) {
+        if (a.status == 'Arrived' && b.status != 'Arrived') return -1;
+        if (a.status != 'Arrived' && b.status == 'Arrived') return 1;
+        if (a.tokenNumber != null && b.tokenNumber != null) return a.tokenNumber!.compareTo(b.tokenNumber!);
+        return a.timeSlot.compareTo(b.timeSlot);
+      });
     } catch (e) {
       print("Error loading more appointments: $e");
     } finally {
@@ -206,10 +221,7 @@ class DoctorDashboardController extends GetxController {
         patientName = appt.patientDetails!['name'];
       }
 
-      return appt.copyWith(
-        patientName: patientName,
-        patientDetails: details,
-      );
+      return appt.copyWith(patientName: patientName, patientDetails: details);
     } catch (e) {
       return appt.copyWith(patientName: 'Patient');
     }
@@ -243,19 +255,21 @@ class DoctorDashboardController extends GetxController {
   Future<void> updateAppointmentStatus(String appointmentId, String status) async {
     try {
       await _firestoreService.updateAppointmentStatus(appointmentId, status);
-      
+
       final appt = appointments.firstWhereOrNull((a) => a.appointmentId == appointmentId);
       if (appt != null) {
-        await _firestoreService.createNotification(NotificationModel(
-          notificationId: '',
-          userId: appt.patientId,
-          title: 'Appointment $status',
-          message: 'Your appointment on ${appt.appointmentDate} has been $status by Dr. ${doctorProfile.value?.doctorName}',
-          type: 'appointment',
-          channel: 'app',
-          isRead: false,
-          createdAt: DateTime.now(),
-        ));
+        await _firestoreService.createNotification(
+          NotificationModel(
+            notificationId: '',
+            userId: appt.patientId,
+            title: 'Appointment $status',
+            message: 'Your appointment on ${appt.appointmentDate} has been $status by Dr. ${doctorProfile.value?.doctorName}',
+            type: 'appointment',
+            channel: 'app',
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
       }
 
       await loadAppointments(selectedDate.value);
@@ -273,9 +287,7 @@ class DoctorDashboardController extends GetxController {
     // Find next appointment for Home Tab
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     if (selectedDate.value == today) {
-      nextAppointment.value = appointments.firstWhereOrNull(
-        (a) => a.status == 'Confirmed' || a.status == 'Arrived'
-      );
+      nextAppointment.value = appointments.firstWhereOrNull((a) => a.status == 'Confirmed' || a.status == 'Arrived');
     } else {
       nextAppointment.value = null;
     }
@@ -321,15 +333,14 @@ class DoctorDashboardController extends GetxController {
     );
   }
 
-
-  void goToAddReceptionist() {
+  Future<void> goToAddReceptionist() async {
     final hId = doctorProfile.value?.hospitalId;
     final dId = doctorProfile.value?.doctorId;
     if (hId != null && hId.isNotEmpty) {
-      Get.toNamed(AppRoutes.addReceptionist, arguments: {
-        'hospitalId': hId,
-        'doctorId': dId,
-      });
+      final result = await Get.toNamed(AppRoutes.addReceptionist, arguments: {'hospitalId': hId, 'doctorId': dId});
+      if (result == true) {
+        await loadReceptionists();
+      }
     } else {
       AppSnackBar.show('Hospital/Clinic ID not found in your profile.');
     }
@@ -349,13 +360,13 @@ class DoctorDashboardController extends GetxController {
     try {
       final allAppts = await _firestoreService.getDoctorAppointments(doctorProfile.value!.doctorId);
       final patientIds = allAppts.map((a) => a.patientId).toSet().toList();
-      
+
       List<UserModel> patients = [];
       for (String pid in patientIds) {
         final p = await _firestoreService.getUser(pid);
         if (p != null) patients.add(p);
       }
-      
+
       allPatients.assignAll(patients);
       filteredPatients.assignAll(patients);
     } catch (e) {
@@ -386,10 +397,7 @@ class DoctorDashboardController extends GetxController {
         title: const Text('Logout'),
         content: const Text('Are you sure you want to logout?'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               await _authRepository.signOut();
@@ -405,6 +413,7 @@ class DoctorDashboardController extends GetxController {
 
   @override
   void onClose() {
+    _appointmentsSubscription?.cancel();
     scrollController.dispose();
     super.onClose();
   }

@@ -122,6 +122,13 @@ class ReceptionistDashboardController extends GetxController {
     }
 
     allAppointmentsForDate.assignAll(enhancedList);
+    // Sort by token number (serial) if available, otherwise by time slot
+    allAppointmentsForDate.sort((a, b) {
+      if (a.tokenNumber != null && b.tokenNumber != null) {
+        return a.tokenNumber!.compareTo(b.tokenNumber!);
+      }
+      return a.timeSlot.compareTo(b.timeSlot);
+    });
     
     totalPatientsCount.value = enhancedList.length;
     confirmedCount.value = enhancedList.where((a) => 

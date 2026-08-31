@@ -95,6 +95,12 @@ class ReceptionistAppointmentsScreen extends GetView<ReceptionistAppointmentsCon
                 ],
               ),
               const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(child: _detailItem(Icons.numbers_rounded, 'Serial Number', '#${appt.tokenNumber?.toString().padLeft(2, '0') ?? "N/A"}')),
+                  Expanded(child: _detailItem(Icons.person_search_rounded, 'Patient Type', appt.patientType ?? 'New')),
+                ],
+              ),
               _detailItem(Icons.person_outline, 'Patient Name', appt.patientName ?? 'N/A'),
               _detailItem(Icons.people_outline, 'Relationship', '${appt.patientDetails?['relationship'] ?? 'Self'}'),
               _detailItem(
@@ -260,13 +266,45 @@ class _AppointmentListCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(appointment.patientName ?? 'Patient', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Row(
+                        children: [
+                          Text(appointment.patientName ?? 'Patient', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(width: 8),
+                          if (appointment.patientType != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: appointment.patientType == 'New' ? Colors.orange.shade50 : Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                appointment.patientType == 'New' ? 'N' : 'O',
+                                style: TextStyle(
+                                  color: appointment.patientType == 'New' ? Colors.orange.shade700 : Colors.blue.shade700,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       if (!appointment.isForSelf)
                         Text(
                           'For: ${appointment.patientDetails?['relationship'] ?? 'Other'}',
                           style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
-                      Text('Slot: ${appointment.timeSlot}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      Row(
+                        children: [
+                          if (appointment.tokenNumber != null) ...[
+                            Text(
+                              '#${appointment.tokenNumber.toString().padLeft(2, '0')}',
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Text('Slot: ${appointment.timeSlot}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -328,7 +366,7 @@ class _AppointmentListCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onMarkPaid,
                       icon: const Icon(Icons.payments_outlined, size: 18),
-                      label: const Text('Collect Cash'),
+                      label: Text('Collect Cash ₹${appointment.fee.toInt()}'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
@@ -382,11 +420,11 @@ class _AppointmentListCard extends StatelessWidget {
 
     if (isPaid) {
       color = Colors.green;
-      label = 'Paid';
+      label = 'Consultation Paid (Cash)';
       icon = Icons.check_circle_rounded;
     } else if (isBookingPaid) {
       color = Colors.blue;
-      label = 'Booking Charge Paid';
+      label = 'Slot Charge Paid (Online)';
       icon = Icons.info_rounded;
     }
 

@@ -18,14 +18,8 @@ class PatientProfileScreen extends GetView<PatientProfileController> {
         elevation: 0,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () => Get.toNamed(AppRoutes.notifications),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: controller.goToEditProfile,
-          ),
+          IconButton(icon: const Icon(Icons.notifications_none_rounded), onPressed: () => Get.toNamed(AppRoutes.notifications)),
+          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: controller.goToEditProfile),
           const SizedBox(width: 8),
         ],
       ),

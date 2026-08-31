@@ -121,6 +121,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.5.0"
+  cloud_functions:
+    dependency: "direct main"
+    description:
+      name: cloud_functions
+      sha256: f443d63d114c313b00a67a9507f63c17972d70cdb4a62cbbf43561246da05187
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.2"
+  cloud_functions_platform_interface:
+    dependency: transitive
+    description:
+      name: cloud_functions_platform_interface
+      sha256: "640a625abb94b62423ebb67f0fca684ab03127194880e419f05460475f318202"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.2"
+  cloud_functions_web:
+    dependency: transitive
+    description:
+      name: cloud_functions_web
+      sha256: da3540b7c0390d6cfcf8d17b6e2722e3ae768801cd689ec31ed275d1e6b8ed24
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.8"
   code_assets:
     dependency: transitive
     description:
@@ -169,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.14"
+  eventify:
+    dependency: transitive
+    description:
+      name: eventify
+      sha256: b829429f08586cc2001c628e7499e3e3c2493a1d895fd73b00ecb23351aa5a66
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -760,6 +792,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  razorpay_flutter:
+    dependency: "direct main"
+    description:
+      name: razorpay_flutter
+      sha256: a9026acf004df802128be6996a9397f5e9c20f32dd12ab215fd1659e0233c9f0
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.5"
   record_use:
     dependency: transitive
     description:

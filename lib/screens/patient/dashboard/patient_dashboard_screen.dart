@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/app_colors.dart';
@@ -282,7 +283,19 @@ class PatientDashboardScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              _tag(appt.status, const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _tag(appt.status, const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
+                  if (appt.tokenNumber != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Token: #${appt.tokenNumber.toString().padLeft(2, '0')}',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
           const Divider(height: 24),

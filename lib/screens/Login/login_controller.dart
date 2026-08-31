@@ -157,28 +157,17 @@ class LoginController extends GetxController {
     update();
 
     try {
-      await _authRepository.verifyPhoneNumber(
-        mobileController.text.trim(),
-        verificationCompleted: (PhoneAuthCredential credential) {},
-        verificationFailed: (FirebaseAuthException e) {
-          isLoading.value = false;
-          update();
-          AppSnackBar.show(e.message ?? 'Verification failed');
+      await _authRepository.sendMsg91Otp(mobileController.text.trim());
+      isLoading.value = false;
+      update();
+      Get.toNamed(
+        AppRoutes.otpVerification,
+        arguments: {
+          'mobile': mobileController.text.trim(),
+          'role': selectedRole.value,
+          'isLogin': true,
+          'isMsg91': true,
         },
-        codeSent: (String verificationId, int? resendToken) {
-          isLoading.value = false;
-          update();
-          Get.toNamed(
-            AppRoutes.otpVerification,
-            arguments: {
-              'mobile': mobileController.text.trim(),
-              'role': selectedRole.value,
-              'isLogin': true,
-              'verificationId': verificationId,
-            },
-          );
-        },
-        codeAutoRetrievalTimeout: (String vId) {},
       );
     } catch (e) {
       isLoading.value = false;

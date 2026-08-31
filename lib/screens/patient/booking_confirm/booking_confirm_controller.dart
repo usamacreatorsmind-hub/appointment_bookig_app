@@ -5,11 +5,13 @@ import '../../../models/doctor_model.dart';
 import '../../../models/appointment_model.dart';
 import '../../../models/notification_model.dart';
 import '../../../Repository/FirestoreService.dart';
+import '../../../services/booking_service.dart';
 import '../../../utils/app_routes.dart';
 import '../../../utils/helper.dart';
 
 class BookingConfirmController extends GetxController {
   final FirestoreService _firestoreService = FirestoreService();
+  final BookingService _bookingService = BookingService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   late DoctorModel doctor;
@@ -94,6 +96,10 @@ class BookingConfirmController extends GetxController {
       final user = await _firestoreService.getUser(_auth.currentUser!.uid);
       final currentUserName = user?.name ?? 'Patient';
 
+      // Fetch Token and Patient Type
+      final token = await _bookingService.getNextTokenNumber(doctor.doctorId, selectedDateStr);
+      final pType = await _bookingService.checkPatientType(_auth.currentUser!.uid, doctor.doctorId);
+
       final appt = AppointmentModel(
         appointmentId: '',
         patientId: _auth.currentUser!.uid,
@@ -107,6 +113,8 @@ class BookingConfirmController extends GetxController {
         paymentStatus: 'Unpaid',
         fee: doctor.consultationFee,
         isForSelf: isForSelf.value,
+        tokenNumber: token,
+        patientType: pType,
         patientDetails: isForSelf.value
             ? null
             : {

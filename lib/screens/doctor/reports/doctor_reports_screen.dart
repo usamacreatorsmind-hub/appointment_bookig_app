@@ -128,35 +128,55 @@ class DoctorReportsScreen extends GetView<DoctorReportsController> {
 
   Widget _buildEarningsCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)]),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
       ),
-      child: Row(
+      child: Column(
         children: [
-          const CircleAvatar(
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.trending_up_rounded, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              const Text('Total Revenue', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Text(
-                '₹${controller.totalEarnings.value.toInt()}',
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              const CircleAvatar(
+                backgroundColor: AppColors.primarySurface,
+                child: Icon(Icons.trending_up_rounded, color: AppColors.primary),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Total Net Revenue', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  Text(
+                    '₹${controller.totalEarnings.value.toInt()}',
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ],
           ),
-          const Spacer(),
-          TextButton(
-            onPressed: () {},
-            child: const Text('Details', style: TextStyle(color: Colors.white)),
-          ),
+          const Divider(height: 32),
+          _earningsRow('Online (Razorpay Slot Fee)', '₹${controller.onlineEarnings.value.toInt()}', Colors.blue),
+          const SizedBox(height: 12),
+          _earningsRow('Offline (Cash Consultation)', '₹${controller.cashEarnings.value.toInt()}', Colors.green),
         ],
       ),
+    );
+  }
+
+  Widget _earningsRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          ],
+        ),
+        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }

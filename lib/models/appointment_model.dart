@@ -16,9 +16,12 @@ class AppointmentModel {
   final String paymentStatus; // Paid | Unpaid
   final String? transactionId;
   final double fee;
+  final double? bookingCharge; // Razorpay Slot Fee
   final String? notes;
   final bool isReviewed; // Added to track if review is done
   final bool isForSelf;
+  final int? tokenNumber; // Serial number for the day
+  final String? patientType; // New | Old
   final Map<String, dynamic>? patientDetails;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -42,9 +45,12 @@ class AppointmentModel {
     required this.paymentStatus,
     this.transactionId,
     required this.fee,
+    this.bookingCharge,
     this.notes,
     this.isReviewed = false,
     this.isForSelf = true,
+    this.tokenNumber,
+    this.patientType,
     this.patientDetails,
     required this.createdAt,
     this.updatedAt,
@@ -82,9 +88,12 @@ class AppointmentModel {
       paymentStatus: map['paymentStatus'] ?? 'Unpaid',
       transactionId: map['transactionId'],
       fee: (map['fee'] ?? 0).toDouble(),
+      bookingCharge: map['bookingCharge'] != null ? (map['bookingCharge']).toDouble() : null,
       notes: map['notes'],
       isReviewed: map['isReviewed'] ?? false,
       isForSelf: map['isForSelf'] ?? true,
+      tokenNumber: map['tokenNumber'] != null ? int.tryParse(map['tokenNumber'].toString()) : null,
+      patientType: map['patientType'],
       patientDetails: map['patientDetails'],
       createdAt: _parseDateTime(map['createdAt']),
       updatedAt: _parseDateTimeNullable(map['updatedAt']),
@@ -108,9 +117,12 @@ class AppointmentModel {
       'paymentStatus': paymentStatus,
       'transactionId': transactionId,
       'fee': fee,
+      'bookingCharge': bookingCharge,
       'notes': notes,
       'isReviewed': isReviewed,
       'isForSelf': isForSelf,
+      'tokenNumber': tokenNumber,
+      'patientType': patientType,
       'patientDetails': patientDetails,
       'createdAt': createdAt,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -121,9 +133,12 @@ class AppointmentModel {
     String? status,
     String? paymentStatus,
     String? transactionId,
+    double? bookingCharge,
     String? notes,
     bool? isReviewed,
     bool? isForSelf,
+    int? tokenNumber,
+    String? patientType,
     Map<String, dynamic>? patientDetails,
     String? doctorName,
     String? specialization,
@@ -143,9 +158,12 @@ class AppointmentModel {
       paymentStatus: paymentStatus ?? this.paymentStatus,
       transactionId: transactionId ?? this.transactionId,
       fee: fee,
+      bookingCharge: bookingCharge ?? this.bookingCharge,
       notes: notes ?? this.notes,
       isReviewed: isReviewed ?? this.isReviewed,
       isForSelf: isForSelf ?? this.isForSelf,
+      tokenNumber: tokenNumber ?? this.tokenNumber,
+      patientType: patientType ?? this.patientType,
       patientDetails: patientDetails ?? this.patientDetails,
       createdAt: createdAt,
       updatedAt: DateTime.now(),

@@ -45,10 +45,39 @@ class HospitalReportsScreen extends GetView<HospitalReportsController> {
           children: [
             Expanded(child: _statCard('Total Appointments', controller.totalAppointments.value.toString(), Icons.event_note_rounded, Colors.blue)),
             const SizedBox(width: 12),
-            Expanded(child: _statCard('Total Revenue', '₹${controller.totalRevenue.value.toInt()}', Icons.payments_rounded, Colors.green)),
+            Expanded(child: _statCard('Net Revenue', '₹${controller.totalRevenue.value.toInt()}', Icons.payments_rounded, Colors.green)),
           ],
         ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+          ),
+          child: Row(
+            children: [
+              _revenueMiniItem('Online (Razorpay)', '₹${controller.onlineRevenue.value.toInt()}', Colors.blue),
+              Container(width: 1, height: 30, color: AppColors.primaryBorder, margin: const EdgeInsets.symmetric(horizontal: 16)),
+              _revenueMiniItem('Cash (Expected)', '₹${controller.cashRevenue.value.toInt()}', Colors.green),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _revenueMiniItem(String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          const SizedBox(height: 4),
+          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
     );
   }
 

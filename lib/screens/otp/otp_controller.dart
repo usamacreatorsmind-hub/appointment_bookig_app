@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,6 +20,7 @@ class OtpController extends GetxController {
   late LoginRole role;
   late bool isLogin;
   bool isForgotPassword = false;
+  bool isMsg91 = false;
   String? verificationId;
 
   String? name, email, password, dob, gender, bloodGroup;
@@ -42,6 +44,7 @@ class OtpController extends GetxController {
       role = args['role'] ?? LoginRole.patient;
       isLogin = args['isLogin'] ?? true;
       isForgotPassword = args['isForgotPassword'] ?? false;
+      isMsg91 = args['isMsg91'] ?? false;
       verificationId = args['verificationId'];
 
       if (!isLogin) {
@@ -76,34 +79,63 @@ class OtpController extends GetxController {
     return '${m.toString().padLeft(1, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
-  bool get isOtpComplete => enteredOtp.value.length == 6;
+  bool get isOtpComplete => enteredOtp.value.length == (isMsg91 ? 4 : 6);
 
   Future<void> verifyOtp([String? pin]) async {
     final code = pin ?? otpController.text;
-    if (code.length != 6) return;
+    if (code.isEmpty) return;
+    if (isMsg91) {
+      if (code.length != 4) return;
+    } else {
+      if (code.length != 6) return;
+    }
 
     isLoading.value = true;
     update();
 
+    debugPrint("--- OTP Verification Started ---");
+    debugPrint("Mobile: $mobileNumber");
+    debugPrint("Entered OTP: $code");
+    debugPrint("Login Mode: $isLogin");
+    debugPrint("Is MSG91: $isMsg91");
+
     try {
-      final phoneAuthCredential = PhoneAuthProvider.credential(verificationId: verificationId!, smsCode: code);
+      UserCredential? userCredential;
+
+      if (isMsg91) {
+        debugPrint("Calling verifyMsg91Otp Cloud Function...");
+        final result = await _authRepository.verifyMsg91Otp(mobileNumber, code);
+        debugPrint("Cloud Function Result: $result");
+
+        if (isLogin || isForgotPassword) {
+          if (result['isRegistered'] == true && result['customToken'] != null) {
+            userCredential = await _authRepository.signInWithCustomToken(result['customToken']);
+          } else {
+            AppSnackBar.show("User record not found. Please register.");
+            isLoading.value = false;
+            update();
+            return;
+          }
+        }
+      } else {
+        final phoneAuthCredential = PhoneAuthProvider.credential(verificationId: verificationId!, smsCode: code);
+        if (isForgotPassword || isLogin) {
+          userCredential = await FirebaseAuth.instance.signInWithCredential(phoneAuthCredential);
+        }
+      }
 
       if (isForgotPassword) {
-        // Sign in with Phone to allow password update
-        final userCredential = await FirebaseAuth.instance.signInWithCredential(phoneAuthCredential);
-        if (userCredential.user != null) {
+        if (userCredential?.user != null) {
           Get.offNamed(AppRoutes.resetPassword);
         }
       } else if (isLogin) {
-        final userCredential = await FirebaseAuth.instance.signInWithCredential(phoneAuthCredential);
-        if (userCredential.user != null) {
-          final String uid = userCredential.user!.uid;
+        if (userCredential?.user != null) {
+          final String uid = userCredential!.user!.uid;
           await NotificationService.to.updateToken();
 
           UserModel? userData = await _firestoreService.getUser(uid);
 
           if (userData == null) {
-            // Try finding user by mobile number if UID lookup fails
             userData = await _authRepository.getUserByMobile(mobileNumber);
             if (userData != null) {
               String oldDocId = userData.uid;
@@ -114,7 +146,6 @@ class OtpController extends GetxController {
           }
 
           if (userData != null) {
-            // --- Role Validation ---
             String selectedRoleStr = _getRoleString(role);
             if (userData.role != selectedRoleStr) {
               await _authRepository.signOut();
@@ -123,8 +154,6 @@ class OtpController extends GetxController {
               update();
               return;
             }
-            // -----------------------
-
             _navigateAfterVerification(userData.role);
           } else {
             AppSnackBar.show("User record not found in database. Please register.");
@@ -135,10 +164,13 @@ class OtpController extends GetxController {
         final emailCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email!, password: password!);
 
         if (emailCredential.user != null) {
-          try {
-            await emailCredential.user!.linkWithCredential(phoneAuthCredential);
-          } catch (e) {
-            debugPrint("Phone linking failed : $e");
+          if (!isMsg91) {
+            try {
+              final phoneAuthCredential = PhoneAuthProvider.credential(verificationId: verificationId!, smsCode: code);
+              await emailCredential.user!.linkWithCredential(phoneAuthCredential);
+            } catch (e) {
+              debugPrint("Phone linking failed : $e");
+            }
           }
 
           UserModel newUser = UserModel(
@@ -173,8 +205,27 @@ class OtpController extends GetxController {
       }
     } on FirebaseAuthException catch (e) {
       AppSnackBar.show(e.message ?? 'Verification failed');
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint("--- Cloud Function Exception ---");
+      debugPrint("Code: ${e.code}");
+      debugPrint("Message: ${e.message}");
+      debugPrint("Details: ${e.details}");
+      // If it's internal, show the details (which we just added to the Cloud Function)
+      String displayMsg = e.message ?? 'Verification failed';
+      if (e.code == 'internal' && e.details != null) {
+        displayMsg = "${e.message} (${e.details})";
+      }
+      AppSnackBar.show(displayMsg);
     } catch (e) {
-      AppSnackBar.show(e.toString());
+      debugPrint("--- Generic Exception ---");
+      debugPrint(e.toString());
+      String msg = e.toString();
+      if (msg.contains('OTP not match')) {
+        msg = 'Invalid OTP. Please check and try again.';
+      } else if (msg.contains('Exception:')) {
+        msg = msg.split('Exception:').last.trim();
+      }
+      AppSnackBar.show(msg);
     } finally {
       isLoading.value = false;
       update();
@@ -182,12 +233,14 @@ class OtpController extends GetxController {
   }
 
   void _navigateAfterVerification(String roleStr) {
-    if (roleStr == 'patient')
+    if (roleStr == 'patient') {
       Get.offAllNamed(AppRoutes.patientDashboard);
-    else if (roleStr == 'doctor')
+    } else if (roleStr == 'doctor')
       Get.offAllNamed(AppRoutes.doctorDashboard);
     else if (roleStr == 'hospital_admin')
       Get.offAllNamed(AppRoutes.hospitalDashboard);
+    else if (roleStr == 'receptionist')
+      Get.offAllNamed(AppRoutes.receptionistDashboard);
     else
       Get.offAllNamed(AppRoutes.roleSelection);
   }
@@ -197,18 +250,25 @@ class OtpController extends GetxController {
     isLoading.value = true;
     update();
     try {
-      await _authRepository.verifyPhoneNumber(
-        mobileNumber,
-        verificationCompleted: (PhoneAuthCredential credential) {},
-        verificationFailed: (FirebaseAuthException e) => AppSnackBar.show(e.message ?? 'Verification failed'),
-
-        codeSent: (String vId, int? resendToken) {
-          verificationId = vId;
-          _startTimer();
-          AppSnackBar.show('New code sent to +91 $mobileNumber');
-        },
-        codeAutoRetrievalTimeout: (String vId) {},
-      );
+      if (isMsg91) {
+        await _authRepository.sendMsg91Otp(mobileNumber);
+        _startTimer();
+        AppSnackBar.show('New code sent to +91 $mobileNumber');
+      } else {
+        await _authRepository.verifyPhoneNumber(
+          mobileNumber,
+          verificationCompleted: (PhoneAuthCredential credential) {},
+          verificationFailed: (FirebaseAuthException e) => AppSnackBar.show(e.message ?? 'Verification failed'),
+          codeSent: (String vId, int? resendToken) {
+            verificationId = vId;
+            _startTimer();
+            AppSnackBar.show('New code sent to +91 $mobileNumber');
+          },
+          codeAutoRetrievalTimeout: (String vId) {},
+        );
+      }
+    } catch (e) {
+      AppSnackBar.show(e.toString());
     } finally {
       isLoading.value = false;
       update();

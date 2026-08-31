@@ -12,11 +12,13 @@ import '../../../models/doctor_model.dart';
 import '../../../models/appointment_model.dart';
 import '../../../models/doctor_schedule_model.dart';
 import '../../../models/patient_profile_model.dart';
+import '../../../services/booking_service.dart';
 import '../../../utils/helper.dart';
 
 class WalkInBookingController extends GetxController {
   final AuthRepository _authRepository = AuthRepository();
   final FirestoreService _firestoreService = FirestoreService();
+  final BookingService _bookingService = BookingService();
 
   // State
   final currentStep = 0.obs;
@@ -224,6 +226,11 @@ class WalkInBookingController extends GetxController {
     isLoading.value = true;
     try {
       final patientName = isForSelf.value ? foundPatient!.name : otherNameController.text.trim();
+      final dateStr = selectedDate.value.toIso8601String().split('T')[0];
+
+      // Fetch Token and Patient Type
+      final token = await _bookingService.getNextTokenNumber(selectedDoctor.value!.doctorId, dateStr);
+      final pType = await _bookingService.checkPatientType(foundPatient!.uid, selectedDoctor.value!.doctorId);
 
       final appt = AppointmentModel(
         appointmentId: '', // Firestore will generate
@@ -232,7 +239,7 @@ class WalkInBookingController extends GetxController {
         doctorId: selectedDoctor.value!.doctorId,
         doctorName: selectedDoctor.value!.doctorName,
         hospitalId: receptionistUser!.hospitalId!,
-        appointmentDate: selectedDate.value.toIso8601String().split('T')[0],
+        appointmentDate: dateStr,
         timeSlot: selectedSlot.value!,
         consultationType: 'Offline',
         symptoms: symptomsController.text.trim(),
@@ -240,6 +247,8 @@ class WalkInBookingController extends GetxController {
         paymentStatus: 'Unpaid',
         fee: selectedDoctor.value!.consultationFee,
         isForSelf: isForSelf.value,
+        tokenNumber: token,
+        patientType: pType,
         patientDetails: isForSelf.value
             ? null
             : {

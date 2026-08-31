@@ -10,6 +10,8 @@ class PaymentModel {
   final double amount;
   final String paymentMethod; // UPI | Card | Net Banking | Wallet
   final String transactionId; // Gateway transaction ID
+  final String? razorpayOrderId;
+  final String? razorpaySignature;
   final String paymentDate;
   final String status;        // Success | Failed | Refunded
   final String? refundId;
@@ -23,6 +25,8 @@ class PaymentModel {
     required this.amount,
     required this.paymentMethod,
     required this.transactionId,
+    this.razorpayOrderId,
+    this.razorpaySignature,
     required this.paymentDate,
     required this.status,
     this.refundId,
@@ -52,6 +56,8 @@ class PaymentModel {
       amount: (map['amount'] ?? 0).toDouble(),
       paymentMethod: map['paymentMethod'] ?? '',
       transactionId: map['transactionId'] ?? '',
+      razorpayOrderId: map['razorpayOrderId'],
+      razorpaySignature: map['razorpaySignature'],
       paymentDate: map['paymentDate'] ?? '',
       status: map['status'] ?? 'Pending',
       refundId: map['refundId'],
@@ -67,6 +73,8 @@ class PaymentModel {
       'amount': amount,
       'paymentMethod': paymentMethod,
       'transactionId': transactionId,
+      'razorpayOrderId': razorpayOrderId,
+      'razorpaySignature': razorpaySignature,
       'paymentDate': paymentDate,
       'status': status,
       'refundId': refundId,

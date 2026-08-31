@@ -76,10 +76,14 @@ class AddReceptionistController extends GetxController {
         await secondaryAuth.signOut();
         
         AppSnackBar.show('Receptionist added successfully!');
-        Get.back();
+        Get.back(result: true);
       }
     } on FirebaseAuthException catch (e) {
-      AppSnackBar.show(e.message ?? 'Failed to create account');
+      if (e.code == 'email-already-in-use') {
+        AppSnackBar.show('This email is already registered. If you previously deleted this staff, please ensure their account is also removed from Firebase Auth console.');
+      } else {
+        AppSnackBar.show(e.message ?? 'Failed to create account');
+      }
     } catch (e) {
       AppSnackBar.show('Error: $e');
     } finally {

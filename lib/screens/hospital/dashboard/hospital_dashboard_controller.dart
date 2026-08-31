@@ -18,12 +18,14 @@ class HospitalDashboardController extends GetxController {
   final hospital = Rxn<HospitalModel>();
   final doctors = <DoctorModel>[].obs;
   final receptionists = <UserModel>[].obs;
-  final todayAppointments = <AppointmentModel>[].obs;
+  final selectedDateAppointments = <AppointmentModel>[].obs;
 
   // Analytics
   final activeDoctorsCount = 0.obs;
   final pendingRequestsCount = 0.obs;
-  final todayRevenue = 0.0.obs;
+  final selectedRangeRevenue = 0.0.obs;
+  final startDate = DateTime.now().obs;
+  final endDate = DateTime.now().obs;
 
   @override
   void onInit() {
@@ -64,9 +66,15 @@ class HospitalDashboardController extends GetxController {
         final hospitalReceptionists = await _firestoreService.getReceptionistsByHospital(managedHospital.hospitalId);
         receptionists.assignAll(hospitalReceptionists);
 
-        // 4. Today's Appointments & Revenue
-        final today = DateTime.now().toIso8601String().split('T')[0];
-        final appts = await _firestoreService.getHospitalAppointments(managedHospital.hospitalId, date: today);
+        // 4. Selected Date Range's Appointments & Revenue
+        final startStr = startDate.value.toIso8601String().split('T')[0];
+        final endStr = endDate.value.toIso8601String().split('T')[0];
+        
+        final appts = await _firestoreService.getHospitalAppointments(
+          managedHospital.hospitalId, 
+          startDate: startStr, 
+          endDate: endStr
+        );
 
         double revenue = 0;
         List<AppointmentModel> enhancedAppts = [];
@@ -76,12 +84,16 @@ class HospitalDashboardController extends GetxController {
 
           enhancedAppts.add(appt.copyWith(patientName: patientData?.name ?? 'Patient', doctorName: doctor?.doctorName ?? 'Doctor'));
 
-          if (appt.paymentStatus == 'Paid' || appt.paymentStatus == 'Success') {
+          // Calculate revenue based on Online Booking Charge + (if completed) Doctor Fee
+          if (appt.paymentStatus == 'Booking Charge Paid' || appt.paymentStatus == 'Paid' || appt.paymentStatus == 'Success') {
+            revenue += (appt.bookingCharge ?? 0);
+          }
+          if (appt.status == 'Completed' && (appt.paymentStatus == 'Paid' || appt.paymentStatus == 'Success')) {
             revenue += appt.fee;
           }
         }
-        todayAppointments.assignAll(enhancedAppts);
-        todayRevenue.value = revenue;
+        selectedDateAppointments.assignAll(enhancedAppts);
+        selectedRangeRevenue.value = revenue;
       }
     } catch (e) {
       print("Error loading dashboard data: $e");
@@ -89,6 +101,12 @@ class HospitalDashboardController extends GetxController {
       isLoading.value = false;
       update();
     }
+  }
+
+  Future<void> updateDateRange(DateTime start, DateTime end) async {
+    startDate.value = start;
+    endDate.value = end;
+    await loadDashboardData();
   }
 
   void onDoctorTapped(DoctorModel doctor) {

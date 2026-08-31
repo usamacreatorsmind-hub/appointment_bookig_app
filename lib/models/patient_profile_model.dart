@@ -15,6 +15,7 @@ class PatientProfileModel {
   final String? emergencyContactName;
   final String? emergencyContactNumber;
   final String? emergencyContactRelation;
+  final String? guardianName; // Added for Critical Patient Info
   final String? insuranceProvider;
   final String? insurancePolicyNumber;
   final bool isProfileComplete;
@@ -35,6 +36,7 @@ class PatientProfileModel {
     this.emergencyContactName,
     this.emergencyContactNumber,
     this.emergencyContactRelation,
+    this.guardianName,
     this.insuranceProvider,
     this.insurancePolicyNumber,
     this.isProfileComplete = false,
@@ -73,6 +75,7 @@ class PatientProfileModel {
       emergencyContactName: map['emergencyContactName'],
       emergencyContactNumber: map['emergencyContactNumber'],
       emergencyContactRelation: map['emergencyContactRelation'],
+      guardianName: map['guardianName'],
       insuranceProvider: map['insuranceProvider'] ?? map['insuranceDetails']?['provider'],
       insurancePolicyNumber: map['insurancePolicyNumber'] ?? map['insuranceDetails']?['policyNo'],
       isProfileComplete: map['isProfileComplete'] ?? true,
@@ -96,6 +99,7 @@ class PatientProfileModel {
       'emergencyContactName': emergencyContactName,
       'emergencyContactNumber': emergencyContactNumber,
       'emergencyContactRelation': emergencyContactRelation,
+      'guardianName': guardianName,
       'insuranceProvider': insuranceProvider,
       'insurancePolicyNumber': insurancePolicyNumber,
       'isProfileComplete': isProfileComplete,

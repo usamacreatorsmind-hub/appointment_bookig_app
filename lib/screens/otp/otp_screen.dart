@@ -39,9 +39,9 @@ class OtpVerificationScreen extends StatelessWidget {
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'A 6-digit OTP has been sent to your\nregistered mobile number',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.6),
+                        Text(
+                          'A ${controller.isMsg91 ? "4" : "6"}-digit OTP has been sent to your\nregistered mobile number',
+                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.6),
                         ),
                         const SizedBox(height: 28),
 
@@ -137,7 +137,7 @@ class OtpVerificationScreen extends StatelessWidget {
 
   Widget _buildOtpBoxes(OtpController controller) {
     final defaultPinTheme = PinTheme(
-      width: 48,
+      width: controller.isMsg91 ? 56 : 48,
       height: 60,
       textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
       decoration: BoxDecoration(
@@ -160,7 +160,7 @@ class OtpVerificationScreen extends StatelessWidget {
 
     return Center(
       child: Pinput(
-        length: 6,
+        length: controller.isMsg91 ? 4 : 6,
         controller: controller.otpController,
         focusNode: controller.focusNode,
         defaultPinTheme: defaultPinTheme,

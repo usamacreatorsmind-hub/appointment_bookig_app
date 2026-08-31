@@ -93,10 +93,14 @@ class ReceptionistAppointmentsController extends GetxController {
           }
         }
 
-        // Sort: Arrived first, then by time
+        // Sort: Arrived first, then by token number, then by time
         enhancedList.sort((a, b) {
           if (a.status == 'Arrived' && b.status != 'Arrived') return -1;
           if (a.status != 'Arrived' && b.status == 'Arrived') return 1;
+          
+          if (a.tokenNumber != null && b.tokenNumber != null) {
+            return a.tokenNumber!.compareTo(b.tokenNumber!);
+          }
           return a.timeSlot.compareTo(b.timeSlot);
         });
 
