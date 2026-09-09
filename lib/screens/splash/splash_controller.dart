@@ -1,6 +1,6 @@
 // File: lib/screens/splash/splash_controller.dart
 
-import 'package:doctor_app/utils/app_routes.dart';
+import 'package:appointment_booking_app/utils/app_routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '../../Repository/auth_repository.dart';

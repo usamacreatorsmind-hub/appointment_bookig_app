@@ -1,7 +1,7 @@
-import 'package:doctor_app/utils/app_colors.dart';
-import 'package:doctor_app/utils/app_pages.dart' show AppPages;
-import 'package:doctor_app/utils/app_routes.dart' show AppRoutes;
-import 'package:doctor_app/utils/initial_binding.dart';
+import 'package:appointment_booking_app/utils/app_colors.dart';
+import 'package:appointment_booking_app/utils/app_pages.dart' show AppPages;
+import 'package:appointment_booking_app/utils/app_routes.dart' show AppRoutes;
+import 'package:appointment_booking_app/utils/initial_binding.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

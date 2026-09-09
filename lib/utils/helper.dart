@@ -15,8 +15,8 @@ class AppSnackBar {
 }
 
 class LauncherHelper {
-  static const String privacyPolicyUrl = "https://privacy.creatorsmind.co.in/ayuveda-care-app-privacy-policy/";
-  static const String termsConditionsUrl = "https://privacy.creatorsmind.co.in/terms-conditions-for-ayuveda-care/";
+  static const String privacyPolicyUrl = "https://example.com/privacy-policy";
+  static const String termsConditionsUrl = "https://example.com/terms-conditions";
 
   static Future<void> launchURL(String url) async {
     final Uri uri = Uri.parse(url);

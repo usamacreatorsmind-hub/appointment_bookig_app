@@ -101,7 +101,7 @@ exports.onappointmentstatusupdate = onDocumentUpdated("appointments/{appointment
 
 const MSG91_AUTH_KEY = "566174ACoxByk72v6a955369P1";
 const MSG91_TEMPLATE_ID = "6a95551467221b0f4e010bb2";
-const WEBHOOK_SECRET = "AyuVeda_Secret_2024";
+const WEBHOOK_SECRET = "AppointmentBooking_Secret_2025";
 
 /**
  * Razorpay Webhook to verify and confirm payments
