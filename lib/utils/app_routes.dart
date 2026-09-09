@@ -1,7 +1,6 @@
 class AppRoutes {
   // Auth
   static const String splash           = '/splash';
-  static const String onboarding       = '/onboarding';
   static const String roleSelection    = '/role-selection';
   static const String login            = '/login';
   static const String otpVerification  = '/otp-verification';
@@ -36,9 +35,4 @@ class AppRoutes {
   static const String doctorReports    = '/doctor-reports';
   static const String doctorSelfProfile = '/doctor-self-profile';
   static const String doctorReviews     = '/doctor-reviews';
-
-  // Receptionist
-  static const String receptionistDashboard    = '/receptionist-dashboard';
-  static const String receptionistAppointments = '/receptionist-appointments';
-  static const String walkInBooking            = '/walk-in-booking';
 }

@@ -2,17 +2,12 @@ import 'package:get/get.dart';
 
 import '../screens/splash/splash_binding.dart';
 import '../screens/splash/splash_screen.dart';
-import '../screens/onboarding/onboarding_binding.dart';
-import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/role_selection/role_selection_binding.dart';
 import '../screens/role_selection/role_selection_screen.dart';
 import '../screens/Login/login_binding.dart';
 import '../screens/Login/login_screen.dart';
 import '../screens/otp/otp_binding.dart';
 import '../screens/otp/otp_screen.dart';
-import '../screens/onboarding/language_selection_screen.dart';
-import '../screens/onboarding/location_permission_screen.dart';
-import '../screens/onboarding/terms_conditions_screen.dart';
 import '../screens/register/register_binding.dart';
 import '../screens/register/register_screen.dart';
 import '../screens/doctor/register/doctor_register_binding.dart';
@@ -65,11 +60,6 @@ class AppPages {
       binding: SplashBinding(),
     ),
     GetPage(
-      name: AppRoutes.onboarding,
-      page: () => const OnboardingScreen(),
-      binding: OnboardingBinding(),
-    ),
-    GetPage(
       name: AppRoutes.roleSelection,
       page: () => const RoleSelectionScreen(),
       binding: RoleSelectionBinding(),
@@ -98,18 +88,6 @@ class AppPages {
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordScreen(),
       binding: ForgotPasswordBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.languageSelection,
-      page: () => const LanguageSelectionScreen(),
-    ),
-    GetPage(
-      name: AppRoutes.locationPermission,
-      page: () => const LocationPermissionScreen(),
-    ),
-    GetPage(
-      name: AppRoutes.termsConditions,
-      page: () => const TermsConditionsScreen(),
     ),
     GetPage(
       name: AppRoutes.profileSetup,

@@ -27,7 +27,7 @@ class SplashScreen extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // ── App Name & Tagline ──
-                  const Text('AyuVeda Care', style: AppTextStyles.heading1),
+                  const Text('Appointment Booking App', style: AppTextStyles.heading1),
                   const SizedBox(height: 8),
                   const Text('YOUR HEALTH, OUR PRIORITY', style: AppTextStyles.subtitle),
 

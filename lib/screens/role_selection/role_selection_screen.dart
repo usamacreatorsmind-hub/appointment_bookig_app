@@ -22,8 +22,12 @@ class RoleSelectionScreen extends StatelessWidget {
                 _buildHeader(),
 
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    padding: const EdgeInsets.all(20),
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.85,
                     children: [
                       _buildRoleCard(
                         controller: controller,
@@ -31,50 +35,18 @@ class RoleSelectionScreen extends StatelessWidget {
                         icon: Icons.medical_services_rounded,
                         iconBgColor: AppColors.doctorBg,
                         iconColor: AppColors.doctorIcon,
-                        title: 'Doctor',
-                        subtitle: 'View patients & consultations',
+                        title: 'Doctor\n(Human)',
+                        subtitle: 'Slots & consultations',
                       ),
-                      const SizedBox(height: 12),
-                      _buildRoleCard(
-                        controller: controller,
-                        role: UserRole.patient,
-                        icon: Icons.person_rounded,
-                        iconBgColor: AppColors.patientBg,
-                        iconColor: AppColors.patientIcon,
-                        title: 'Patient',
-                        subtitle: 'Book appointments & records',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildRoleCard(
-                        controller: controller,
-                        role: UserRole.receptionist,
-                        icon: Icons.support_agent_rounded,
-                        iconBgColor: AppColors.receptionistBg,
-                        iconColor: AppColors.receptionistIcon,
-                        title: 'Receptionist',
-                        subtitle: 'Manage walk-ins & desk',
-                      ),
-                      const SizedBox(height: 12),
                       _buildRoleCard(
                         controller: controller,
                         role: UserRole.veterinaryDoctor,
                         icon: Icons.pets_rounded,
                         iconBgColor: AppColors.veterinaryBg,
                         iconColor: AppColors.veterinaryIcon,
-                        title: 'Veterinary Doctor',
-                        subtitle: 'Care for pets & animals',
+                        title: 'Veterinary\nDoctor',
+                        subtitle: 'Care for pets',
                       ),
-                      const SizedBox(height: 12),
-                      _buildRoleCard(
-                        controller: controller,
-                        role: UserRole.petOwner,
-                        icon: Icons.handyman_rounded, // Better icon for pet owner maybe? Using pets is fine
-                        iconBgColor: AppColors.veterinaryBg,
-                        iconColor: AppColors.veterinaryIcon,
-                        title: 'Pet Owner',
-                        subtitle: 'Book appointments for pets',
-                      ),
-                      const SizedBox(height: 12),
                       _buildRoleCard(
                         controller: controller,
                         role: UserRole.officeStaff,
@@ -82,9 +54,17 @@ class RoleSelectionScreen extends StatelessWidget {
                         iconBgColor: AppColors.officeBg,
                         iconColor: AppColors.officeIcon,
                         title: 'Office Staff',
-                        subtitle: 'Manage office visitors',
+                        subtitle: 'Manage visitors',
                       ),
-                      const SizedBox(height: 12),
+                      _buildRoleCard(
+                        controller: controller,
+                        role: UserRole.patient,
+                        icon: Icons.person_rounded,
+                        iconBgColor: AppColors.patientBg,
+                        iconColor: AppColors.patientIcon,
+                        title: 'Patient / Pet Owner',
+                        subtitle: 'Book appointments',
+                      ),
                       _buildRoleCard(
                         controller: controller,
                         role: UserRole.visitor,
@@ -92,7 +72,7 @@ class RoleSelectionScreen extends StatelessWidget {
                         iconBgColor: AppColors.visitorBg,
                         iconColor: AppColors.visitorIcon,
                         title: 'Visitor',
-                        subtitle: 'Register for office visit',
+                        subtitle: 'Office visits',
                       ),
                     ],
                   ),
@@ -111,7 +91,7 @@ class RoleSelectionScreen extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 80, 24, 32),
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
       decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32)),
@@ -119,21 +99,21 @@ class RoleSelectionScreen extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.18)),
             child: ClipOval(
               child: Image.asset(
                 AppImages.appLogo,
                 fit: BoxFit.cover,
-                width: 70,
-                height: 70,
+                width: 50,
+                height: 50,
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           const Text('Who are you?', style: AppTextStyles.heading2),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           const Text('Select your role to continue', style: AppTextStyles.body),
         ],
       ),
@@ -156,47 +136,50 @@ class RoleSelectionScreen extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primarySurface : AppColors.bgWhite,
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : AppColors.bgWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.primaryBorder, width: isSelected ? 1.8 : 0.8),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.primaryBorder, width: isSelected ? 2 : 1),
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))] : null,
         ),
-        child: Row(
+        child: Stack(
           children: [
-            // Icon
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(14)),
-              child: Icon(icon, color: iconColor, size: 28),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-
-            // Text
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTextStyles.roleTitle),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: AppTextStyles.roleSubtitle),
-                ],
+            if (isSelected)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  child: const Icon(Icons.check, size: 12, color: Colors.white),
+                ),
               ),
-            ),
-
-            // Check circle
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                border: Border.all(color: isSelected ? AppColors.primary : AppColors.primaryBorder, width: 1.5),
-              ),
-              child: isSelected ? const Icon(Icons.check_rounded, size: 15, color: Colors.white) : null,
-            ),
           ],
         ),
       ),

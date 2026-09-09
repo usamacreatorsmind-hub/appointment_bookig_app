@@ -6,11 +6,9 @@ import '../../utils/helper.dart';
 
 enum UserRole { 
   doctor, 
-  patient, 
-  receptionist, 
   veterinaryDoctor, 
-  petOwner, 
   officeStaff, 
+  patient, 
   visitor 
 }
 

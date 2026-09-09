@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/app_colors.dart';
@@ -147,11 +146,7 @@ class PatientDashboardScreen extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-              ),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : AppColors.textPrimary),
             ),
           ],
         ),
@@ -375,12 +370,26 @@ class PatientDashboardScreen extends StatelessWidget {
   }
 
   Widget _tag(String label, Color bg, Color textColor) {
+    Color bColor = bg;
+    Color tColor = textColor;
+
+    if (label == 'Confirmed') {
+      bColor = AppColors.success.withOpacity(0.1);
+      tColor = AppColors.success;
+    } else if (label == 'Pending') {
+      bColor = AppColors.warning.withOpacity(0.1);
+      tColor = AppColors.warning;
+    } else if (label == 'Cancelled') {
+      bColor = AppColors.error.withOpacity(0.1);
+      tColor = AppColors.error;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: bColor, borderRadius: BorderRadius.circular(8)),
       child: Text(
         label,
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textColor),
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: tColor),
       ),
     );
   }
@@ -417,10 +426,7 @@ class PatientDashboardScreen extends StatelessWidget {
                       ),
                       child: Text(
                         'All',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isActive ? Colors.white : AppColors.textPrimary),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isActive ? Colors.white : AppColors.textPrimary),
                       ),
                     ),
                   );
@@ -441,10 +447,7 @@ class PatientDashboardScreen extends StatelessWidget {
                     ),
                     child: Text(
                       spec,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.white : AppColors.textPrimary),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isActive ? Colors.white : AppColors.textPrimary),
                     ),
                   ),
                 );
@@ -596,7 +599,7 @@ class _DoctorCard extends StatelessWidget {
             ElevatedButton(
               onPressed: onBook,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

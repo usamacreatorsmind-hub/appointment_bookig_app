@@ -10,11 +10,9 @@ import '../../services/notification_service.dart';
 
 enum LoginRole { 
   doctor, 
-  patient, 
-  receptionist, 
   veterinaryDoctor, 
-  petOwner, 
   officeStaff, 
+  patient, 
   visitor 
 }
 
@@ -42,20 +40,14 @@ class LoginController extends GetxController {
           case UserRole.doctor:
             selectedRole.value = LoginRole.doctor;
             break;
-          case UserRole.patient:
-            selectedRole.value = LoginRole.patient;
-            break;
-          case UserRole.receptionist:
-            selectedRole.value = LoginRole.receptionist;
-            break;
           case UserRole.veterinaryDoctor:
             selectedRole.value = LoginRole.veterinaryDoctor;
             break;
-          case UserRole.petOwner:
-            selectedRole.value = LoginRole.petOwner;
-            break;
           case UserRole.officeStaff:
             selectedRole.value = LoginRole.officeStaff;
+            break;
+          case UserRole.patient:
+            selectedRole.value = LoginRole.patient;
             break;
           case UserRole.visitor:
             selectedRole.value = LoginRole.visitor;
@@ -138,12 +130,10 @@ class LoginController extends GetxController {
 
           AppSnackBar.show('Welcome back, ${userData.name}!');
 
-          if (userData.role == 'patient') {
+          if (userData.role == 'patient' || userData.role == 'pet_owner' || userData.role == 'visitor') {
             Get.offAllNamed(AppRoutes.patientDashboard);
           } else if (userData.role == 'doctor' || userData.role == 'veterinary_doctor') {
             Get.offAllNamed(AppRoutes.doctorDashboard);
-          } else if (userData.role == 'receptionist') {
-            Get.offAllNamed(AppRoutes.receptionistDashboard);
           } else {
             Get.offAllNamed(AppRoutes.roleSelection);
           }
@@ -198,16 +188,12 @@ class LoginController extends GetxController {
     switch (role) {
       case LoginRole.doctor:
         return 'doctor';
-      case LoginRole.patient:
-        return 'patient';
-      case LoginRole.receptionist:
-        return 'receptionist';
       case LoginRole.veterinaryDoctor:
         return 'veterinary_doctor';
-      case LoginRole.petOwner:
-        return 'pet_owner';
       case LoginRole.officeStaff:
         return 'office_staff';
+      case LoginRole.patient:
+        return 'patient';
       case LoginRole.visitor:
         return 'visitor';
       default:

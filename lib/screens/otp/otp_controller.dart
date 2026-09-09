@@ -230,12 +230,10 @@ class OtpController extends GetxController {
   }
 
   void _navigateAfterVerification(String roleStr) {
-    if (roleStr == 'patient') {
+    if (roleStr == 'patient' || roleStr == 'pet_owner' || roleStr == 'visitor') {
       Get.offAllNamed(AppRoutes.patientDashboard);
     } else if (roleStr == 'doctor' || roleStr == 'veterinary_doctor') {
       Get.offAllNamed(AppRoutes.doctorDashboard);
-    } else if (roleStr == 'receptionist') {
-      Get.offAllNamed(AppRoutes.receptionistDashboard);
     } else {
       Get.offAllNamed(AppRoutes.roleSelection);
     }
@@ -277,16 +275,12 @@ class OtpController extends GetxController {
     switch (role) {
       case LoginRole.doctor:
         return 'doctor';
-      case LoginRole.patient:
-        return 'patient';
-      case LoginRole.receptionist:
-        return 'receptionist';
       case LoginRole.veterinaryDoctor:
         return 'veterinary_doctor';
-      case LoginRole.petOwner:
-        return 'pet_owner';
       case LoginRole.officeStaff:
         return 'office_staff';
+      case LoginRole.patient:
+        return 'patient';
       case LoginRole.visitor:
         return 'visitor';
     }

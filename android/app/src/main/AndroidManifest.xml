@@ -3,7 +3,7 @@
     <!-- Android 13+ ke liye notifications permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="AyuVeda Care"
+        android:label="Appointment Booking App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

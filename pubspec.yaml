@@ -66,12 +66,12 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/appLogo/ayu_veda_care_app_logo.png"
+  image_path: "assets/appLogo/app_logo.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/appLogo/ayu_veda_care_app_logo.png"
+  adaptive_icon_foreground: "assets/appLogo/app_logo.png"
   web:
     generate: true
-    image_path: "assets/appLogo/ayu_veda_care_app_logo.png"
+    image_path: "assets/appLogo/app_logo.png"
     background_color: "#FFFFFF"
     theme_color: "#FFFFFF"
 

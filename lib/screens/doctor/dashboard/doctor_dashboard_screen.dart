@@ -679,7 +679,7 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                         ElevatedButton(
                           onPressed: () => Get.toNamed(AppRoutes.addPrescription, arguments: {'appointment': appt}),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: appt.status == 'Arrived' ? Colors.blue : Colors.green,
+                            backgroundColor: appt.status == 'Arrived' ? AppColors.info : AppColors.success,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -863,7 +863,7 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                     Get.toNamed(AppRoutes.addPrescription, arguments: {'appointment': appt});
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -907,20 +907,20 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
     Color bg = Colors.grey.shade100;
     Color text = Colors.grey;
     if (status == 'Confirmed') {
-      bg = Colors.green.shade50;
-      text = Colors.green;
+      bg = AppColors.success.withOpacity(0.1);
+      text = AppColors.success;
     } else if (status == 'Arrived') {
-      bg = Colors.blue.shade50;
-      text = Colors.blue;
+      bg = AppColors.info.withOpacity(0.1);
+      text = AppColors.info;
     } else if (status == 'Pending') {
-      bg = Colors.orange.shade50;
-      text = Colors.orange;
+      bg = AppColors.warning.withOpacity(0.1);
+      text = AppColors.warning;
     } else if (status == 'Cancelled') {
-      bg = Colors.red.shade50;
-      text = Colors.red;
+      bg = AppColors.error.withOpacity(0.1);
+      text = AppColors.error;
     } else if (status == 'Completed') {
-      bg = Colors.blue.shade50;
-      text = Colors.blue;
+      bg = AppColors.info.withOpacity(0.1);
+      text = AppColors.info;
     }
 
     return Container(

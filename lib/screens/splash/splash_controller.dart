@@ -27,23 +27,21 @@ class SplashController extends GetxController {
         if (userData != null) {
           _navigateToDashboard(userData);
         } else {
-          Get.offAllNamed(AppRoutes.onboarding);
+          Get.offAllNamed(AppRoutes.roleSelection);
         }
       } catch (e) {
         Get.offAllNamed(AppRoutes.login);
       }
     } else {
-      Get.offAllNamed(AppRoutes.onboarding);
+      Get.offAllNamed(AppRoutes.roleSelection);
     }
   }
 
   void _navigateToDashboard(UserModel user) {
-    if (user.role == 'patient') {
+    if (user.role == 'patient' || user.role == 'pet_owner' || user.role == 'visitor') {
       Get.offAllNamed(AppRoutes.patientDashboard);
     } else if (user.role == 'doctor' || user.role == 'veterinary_doctor') {
       Get.offAllNamed(AppRoutes.doctorDashboard);
-    } else if (user.role == 'receptionist') {
-      Get.offAllNamed(AppRoutes.receptionistDashboard);
     } else {
       Get.offAllNamed(AppRoutes.roleSelection);
     }

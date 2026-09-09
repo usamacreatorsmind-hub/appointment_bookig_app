@@ -80,11 +80,6 @@ class FirestoreService {
     await _users.doc(uid).delete();
   }
 
-  Future<List<UserModel>> getReceptionistsByDoctor(String doctorId) async {
-    final snap = await _users.where('role', isEqualTo: 'receptionist').where('doctorId', isEqualTo: doctorId).get();
-    return snap.docs.map((d) => UserModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
-  }
-
   Future<void> savePatientProfile(String uid, PatientProfileModel profile) async {
     await _users.doc(uid).collection('profile').doc('details').set(profile.toMap());
   }

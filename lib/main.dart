@@ -1,3 +1,4 @@
+import 'package:doctor_app/utils/app_colors.dart';
 import 'package:doctor_app/utils/app_pages.dart' show AppPages;
 import 'package:doctor_app/utils/app_routes.dart' show AppRoutes;
 import 'package:doctor_app/utils/initial_binding.dart';
@@ -18,14 +19,14 @@ void main() async {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.dark),
     );
-    runApp(const DoctorAppointmentApp());
+    runApp(const AppointmentBookingApp());
   } catch (e) {
-    runApp(const DoctorAppointmentApp());
+    runApp(const AppointmentBookingApp());
   }
 }
 
-class DoctorAppointmentApp extends StatelessWidget {
-  const DoctorAppointmentApp({super.key});
+class AppointmentBookingApp extends StatelessWidget {
+  const AppointmentBookingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +36,10 @@ class DoctorAppointmentApp extends StatelessWidget {
         title: 'Appointment Booking App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF1565C0),
+          colorSchemeSeed: AppColors.primary,
           useMaterial3: true,
           fontFamily: 'Poppins',
-          scaffoldBackgroundColor: const Color(0xFFF5F9FF),
+          scaffoldBackgroundColor: AppColors.bgPage,
         ),
         initialBinding: InitialBinding(),
         initialRoute: AppRoutes.splash,

@@ -74,14 +74,8 @@ class LoginScreen extends StatelessWidget {
       case LoginRole.doctor:
         roleName = 'Doctor';
         break;
-      case LoginRole.receptionist:
-        roleName = 'Receptionist';
-        break;
       case LoginRole.veterinaryDoctor:
         roleName = 'Veterinary Doctor';
-        break;
-      case LoginRole.petOwner:
-        roleName = 'Pet Owner';
         break;
       case LoginRole.officeStaff:
         roleName = 'Office Staff';
@@ -375,7 +369,7 @@ class LoginScreen extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
