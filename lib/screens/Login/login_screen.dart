@@ -74,11 +74,20 @@ class LoginScreen extends StatelessWidget {
       case LoginRole.doctor:
         roleName = 'Doctor';
         break;
-      case LoginRole.hospitalAdmin:
-        roleName = 'Hospital Admin';
-        break;
       case LoginRole.receptionist:
         roleName = 'Receptionist';
+        break;
+      case LoginRole.veterinaryDoctor:
+        roleName = 'Veterinary Doctor';
+        break;
+      case LoginRole.petOwner:
+        roleName = 'Pet Owner';
+        break;
+      case LoginRole.officeStaff:
+        roleName = 'Office Staff';
+        break;
+      case LoginRole.visitor:
+        roleName = 'Visitor';
         break;
     }
 

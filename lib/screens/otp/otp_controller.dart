@@ -178,7 +178,7 @@ class OtpController extends GetxController {
             name: name!,
             email: email!,
             mobile: mobileNumber,
-            role: role.name == 'patient' ? 'patient' : (role.name == 'doctor' ? 'doctor' : 'hospital_admin'),
+            role: _getRoleString(role),
             status: 'active',
             createdAt: DateTime.now(),
           );
@@ -194,12 +194,9 @@ class OtpController extends GetxController {
               isProfileComplete: true,
             );
             await _firestoreService.savePatientProfile(newUser.uid, profile);
-            Get.offAllNamed(AppRoutes.patientDashboard);
-          } else if (role == LoginRole.doctor) {
-            Get.offAllNamed(AppRoutes.doctorDashboard);
-          } else {
-            Get.offAllNamed(AppRoutes.hospitalDashboard);
           }
+          
+          Get.offAllNamed(AppRoutes.languageSelection);
           AppSnackBar.show('Account created successfully!');
         }
       }
@@ -235,14 +232,13 @@ class OtpController extends GetxController {
   void _navigateAfterVerification(String roleStr) {
     if (roleStr == 'patient') {
       Get.offAllNamed(AppRoutes.patientDashboard);
-    } else if (roleStr == 'doctor')
+    } else if (roleStr == 'doctor' || roleStr == 'veterinary_doctor') {
       Get.offAllNamed(AppRoutes.doctorDashboard);
-    else if (roleStr == 'hospital_admin')
-      Get.offAllNamed(AppRoutes.hospitalDashboard);
-    else if (roleStr == 'receptionist')
+    } else if (roleStr == 'receptionist') {
       Get.offAllNamed(AppRoutes.receptionistDashboard);
-    else
+    } else {
       Get.offAllNamed(AppRoutes.roleSelection);
+    }
   }
 
   Future<void> resendOtp() async {
@@ -279,17 +275,22 @@ class OtpController extends GetxController {
 
   String _getRoleString(LoginRole role) {
     switch (role) {
-      case LoginRole.hospitalAdmin:
-        return 'hospital_admin';
       case LoginRole.doctor:
         return 'doctor';
       case LoginRole.patient:
         return 'patient';
       case LoginRole.receptionist:
         return 'receptionist';
-      default:
-        return 'patient';
+      case LoginRole.veterinaryDoctor:
+        return 'veterinary_doctor';
+      case LoginRole.petOwner:
+        return 'pet_owner';
+      case LoginRole.officeStaff:
+        return 'office_staff';
+      case LoginRole.visitor:
+        return 'visitor';
     }
+    return 'patient';
   }
 
   @override

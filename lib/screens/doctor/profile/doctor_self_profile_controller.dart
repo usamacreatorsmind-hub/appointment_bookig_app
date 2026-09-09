@@ -258,6 +258,8 @@ class DoctorSelfProfileController extends GetxController {
         'diseasesCovered': selectedDiseases.toList(),
         'photoUrl': photoUrl,
         'photo': photoUrl,
+        'sector': doctorProfile.value?.sector ?? 'human',
+        'category': doctorProfile.value?.category ?? 'General',
       };
 
       if (doctorProfile.value!.doctorId.isEmpty) {

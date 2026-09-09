@@ -9,6 +9,9 @@ class AppRoutes {
   static const String doctorRegister   = '/doctor-register';
   static const String forgotPassword   = '/forgot-password';
   static const String resetPassword    = '/reset-password';
+  static const String languageSelection = '/language-selection';
+  static const String locationPermission = '/location-permission';
+  static const String termsConditions   = '/terms-conditions';
 
   // Patient
   static const String profileSetup       = '/profile-setup';
@@ -33,16 +36,6 @@ class AppRoutes {
   static const String doctorReports    = '/doctor-reports';
   static const String doctorSelfProfile = '/doctor-self-profile';
   static const String doctorReviews     = '/doctor-reviews';
-
-  // Hospital Admin
-  static const String hospitalDashboard = '/hospital-dashboard';
-  static const String addDoctor         = '/add-doctor';
-  static const String hospitalAppointments = '/hospital-appointments';
-  static const String hospitalProfile      = '/hospital-profile';
-  static const String hospitalReports      = '/hospital-reports';
-  static const String hospitalJoinRequests = '/hospital-join-requests';
-  static const String hospitalDepartments  = '/hospital-departments';
-  static const String addReceptionist      = '/add-receptionist';
 
   // Receptionist
   static const String receptionistDashboard    = '/receptionist-dashboard';

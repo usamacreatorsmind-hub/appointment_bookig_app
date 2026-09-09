@@ -193,6 +193,46 @@ class PdfService {
     await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
   }
 
+  static Future<void> generateOfficeReceiptPdf({
+    required AppointmentModel appointment,
+    required String visitorName,
+    String? purpose,
+  }) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.roll80, // Receipt format
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Center(
+                child: pw.Text("VISITOR RECEIPT", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Divider(),
+              pw.SizedBox(height: 10),
+              pw.Text("Date: ${appointment.appointmentDate}"),
+              pw.Text("Time: ${appointment.timeSlot}"),
+              pw.Text("Token: #${appointment.tokenNumber?.toString().padLeft(3, '0') ?? 'N/A'}"),
+              pw.SizedBox(height: 10),
+              pw.Text("Visitor: $visitorName"),
+              if (purpose != null) pw.Text("Purpose: $purpose"),
+              pw.SizedBox(height: 20),
+              pw.Divider(),
+              pw.Center(
+                child: pw.Text("Please wait for your turn.", style: const pw.TextStyle(fontSize: 10)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+  }
+
   static pw.Widget _tableHeader(String text) {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(5),

@@ -32,6 +32,7 @@ class DoctorRegisterController extends GetxController {
   final isPasswordHidden = true.obs;
 
   final practiceType = 'hospital'.obs; // 'hospital' or 'clinic'
+  final selectedSector = 'human'.obs; // 'human' | 'veterinary' | 'office'
 
   // Multiple Hospitals Selection
   final selectedHospitalIds = <String>[].obs;
@@ -201,6 +202,7 @@ class DoctorRegisterController extends GetxController {
           consultationMode: selectedConsultationMode.value,
           status: practiceType.value == 'clinic' ? 'active' : 'pending',
           practiceType: practiceType.value,
+          sector: selectedSector.value,
           clinicName: practiceType.value == 'clinic' ? clinicNameController.text.trim() : null,
           createdAt: DateTime.now(),
         );
@@ -208,12 +210,16 @@ class DoctorRegisterController extends GetxController {
         final String doctorId = await _firestoreService.createDoctor(doctor);
 
         // 3. Create User Document
+        String roleStr = 'doctor';
+        if (selectedSector.value == 'veterinary') roleStr = 'veterinary_doctor';
+        if (selectedSector.value == 'office') roleStr = 'office_staff';
+
         final userModel = UserModel(
           uid: uid,
           name: nameController.text.trim(),
           mobile: mobileController.text.trim(),
           email: emailController.text.trim(),
-          role: 'doctor',
+          role: roleStr,
           status: practiceType.value == 'clinic' ? 'active' : 'pending',
           doctorId: doctorId,
           hospitalId: finalHospitalId,
@@ -241,7 +247,11 @@ class DoctorRegisterController extends GetxController {
           AppSnackBar.show('Registration successful! Your clinic profile is ready.');
         }
 
-        Get.offAllNamed(AppRoutes.login, arguments: {'role': LoginRole.doctor});
+        LoginRole loginRole = LoginRole.doctor;
+        if (selectedSector.value == 'veterinary') loginRole = LoginRole.veterinaryDoctor;
+        if (selectedSector.value == 'office') loginRole = LoginRole.officeStaff;
+
+        Get.offAllNamed(AppRoutes.login, arguments: {'role': loginRole});
       }
     } catch (e) {
       AppSnackBar.show(e.toString());

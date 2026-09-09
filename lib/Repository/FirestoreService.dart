@@ -80,11 +80,6 @@ class FirestoreService {
     await _users.doc(uid).delete();
   }
 
-  Future<List<UserModel>> getReceptionistsByHospital(String hospitalId) async {
-    final snap = await _users.where('role', isEqualTo: 'receptionist').where('hospitalId', isEqualTo: hospitalId).get();
-    return snap.docs.map((d) => UserModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
-  }
-
   Future<List<UserModel>> getReceptionistsByDoctor(String doctorId) async {
     final snap = await _users.where('role', isEqualTo: 'receptionist').where('doctorId', isEqualTo: doctorId).get();
     return snap.docs.map((d) => UserModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
@@ -131,12 +126,6 @@ class FirestoreService {
     return HospitalModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 
-  Future<HospitalModel?> getHospitalByAdminUid(String adminUid) async {
-    final snap = await _hospitals.where('adminUid', isEqualTo: adminUid).limit(1).get();
-    if (snap.docs.isEmpty) return null;
-    return HospitalModel.fromMap(snap.docs.first.data() as Map<String, dynamic>, snap.docs.first.id);
-  }
-
   Future<List<HospitalModel>> getAllHospitals() async {
     try {
       // Robust fetching: try 'active', then 'Active', then all fallback
@@ -170,11 +159,6 @@ class FirestoreService {
         return [];
       }
     }
-  }
-
-  Future<void> updateHospital(String hospitalId, Map<String, dynamic> data) async {
-    data['updatedAt'] = FieldValue.serverTimestamp();
-    await _hospitals.doc(hospitalId).update(data);
   }
 
   Future<String> createDoctor(DoctorModel doctor) async {
@@ -214,38 +198,9 @@ class FirestoreService {
     await _joinRequests.add({...requestData, 'status': 'pending', 'createdAt': FieldValue.serverTimestamp()});
   }
 
-  Future<List<Map<String, dynamic>>> getHospitalJoinRequests(String hospitalId) async {
-    final snap = await _joinRequests.where('hospitalId', isEqualTo: hospitalId).where('status', isEqualTo: 'pending').get();
-    return snap.docs.map((doc) => {...doc.data() as Map<String, dynamic>, 'id': doc.id}).toList();
-  }
-
-  Future<void> respondToJoinRequest({
-    required String requestId,
-    required String doctorId,
-    required String hospitalId,
-    required String status, // 'approved' or 'rejected'
-  }) async {
-    final batch = _db.batch();
-
-    // 1. Update Request Status
-    batch.update(_joinRequests.doc(requestId), {'status': status, 'respondedAt': FieldValue.serverTimestamp()});
-
-    // 2. If approved, add hospitalId to doctor's hospitalIds list
-    if (status == 'approved') {
-      batch.update(_doctors.doc(doctorId), {
-        'hospitalIds': FieldValue.arrayUnion([hospitalId]),
-        'status': 'active', // Also activate the doctor if they were pending
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } else if (status == 'rejected') {
-      batch.update(_doctors.doc(doctorId), {'status': 'rejected', 'updatedAt': FieldValue.serverTimestamp()});
-    }
-
-    await batch.commit();
-  }
-
   /// PAGINATED SEARCH: Uses limit and startAfter for efficient data fetching.
   Future<Map<String, dynamic>> searchDoctorsPaginated({
+    String? sector,
     String? specialization,
     String? name,
     double? maxFee,
@@ -254,6 +209,10 @@ class FirestoreService {
   }) async {
     try {
       Query query = _doctors.where('status', isEqualTo: 'active');
+
+      if (sector != null && sector.isNotEmpty) {
+        query = query.where('sector', isEqualTo: sector);
+      }
 
       if (specialization != null && specialization.isNotEmpty) {
         query = query.where('specialization', arrayContains: specialization);
@@ -292,9 +251,13 @@ class FirestoreService {
     }
   }
 
-  Future<List<DoctorModel>> getTopDoctors({int limit = 10}) async {
+  Future<List<DoctorModel>> getTopDoctors({String? sector, int limit = 10}) async {
     try {
-      final snap = await _doctors.where('status', whereIn: ['active', 'Active']).get();
+      Query query = _doctors.where('status', whereIn: ['active', 'Active']);
+      if (sector != null) {
+        query = query.where('sector', isEqualTo: sector);
+      }
+      final snap = await query.get();
       List<DoctorModel> list = snap.docs.map((d) => DoctorModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
       list.sort((a, b) => (b.rating).compareTo(a.rating));
       return list.take(limit).toList();
@@ -408,9 +371,13 @@ class FirestoreService {
     }
   }
 
-  Future<List<String>> getUsedSpecializations() async {
+  Future<List<String>> getUsedSpecializations({String? sector}) async {
     try {
-      final doctorsSnap = await _doctors.where('status', isEqualTo: 'active').get();
+      Query query = _doctors.where('status', isEqualTo: 'active');
+      if (sector != null) {
+        query = query.where('sector', isEqualTo: sector);
+      }
+      final doctorsSnap = await query.get();
       final specs = <String>{};
       for (var doc in doctorsSnap.docs) {
         final data = doc.data() as Map<String, dynamic>?;
@@ -550,29 +517,6 @@ class FirestoreService {
     } catch (e) {
       print("Error in getDoctorAppointmentsPaginated: $e");
       return {'docs': [], 'lastDoc': null, 'hasMore': false};
-    }
-  }
-
-  Future<List<AppointmentModel>> getHospitalAppointments(String hospitalId, {String? date, String? startDate, String? endDate}) async {
-    try {
-      Query query = _appointments.where('hospitalId', isEqualTo: hospitalId);
-
-      if (date != null && date.isNotEmpty) {
-        query = query.where('appointmentDate', isEqualTo: date);
-      } else if (startDate != null && endDate != null) {
-        query = query.where('appointmentDate', isGreaterThanOrEqualTo: startDate)
-                     .where('appointmentDate', isLessThanOrEqualTo: endDate);
-      }
-
-      final snap = await query.get();
-      var list = snap.docs.map((d) => AppointmentModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
-
-      // Sort by time slot for the given day
-      list.sort((a, b) => a.timeSlot.compareTo(b.timeSlot));
-      return list;
-    } catch (e) {
-      print("Error in getHospitalAppointments: $e");
-      return [];
     }
   }
 

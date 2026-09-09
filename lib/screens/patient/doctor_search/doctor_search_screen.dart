@@ -114,7 +114,19 @@ class DoctorSearchScreen extends GetView<DoctorSearchController> {
           hintText: 'Search doctor, symptoms, disease...',
           hintStyle: const TextStyle(fontSize: 14, color: AppColors.textHint),
           prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
-          suffixIcon: IconButton(icon: const Icon(Icons.clear_rounded), onPressed: controller.clearFilters),
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Obx(() => IconButton(
+                    icon: Icon(
+                      controller.isListening.value ? Icons.mic_rounded : Icons.mic_none_rounded,
+                      color: controller.isListening.value ? Colors.red : AppColors.primary,
+                    ),
+                    onPressed: controller.toggleVoiceSearch,
+                  )),
+              IconButton(icon: const Icon(Icons.clear_rounded), onPressed: controller.clearFilters),
+            ],
+          ),
           filled: true,
           fillColor: AppColors.bgPage,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

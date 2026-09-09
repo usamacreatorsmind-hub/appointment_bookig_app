@@ -40,10 +40,8 @@ class SplashController extends GetxController {
   void _navigateToDashboard(UserModel user) {
     if (user.role == 'patient') {
       Get.offAllNamed(AppRoutes.patientDashboard);
-    } else if (user.role == 'doctor') {
+    } else if (user.role == 'doctor' || user.role == 'veterinary_doctor') {
       Get.offAllNamed(AppRoutes.doctorDashboard);
-    } else if (user.role == 'hospital_admin') {
-      Get.offAllNamed(AppRoutes.hospitalDashboard);
     } else if (user.role == 'receptionist') {
       Get.offAllNamed(AppRoutes.receptionistDashboard);
     } else {

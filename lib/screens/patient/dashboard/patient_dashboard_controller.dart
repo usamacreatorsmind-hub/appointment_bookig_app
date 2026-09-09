@@ -16,6 +16,7 @@ class PatientDashboardController extends GetxController {
   final selectedSpecIndex = (-1).obs;
   final patientName = 'Patient'.obs;
   final specializations = <String>[].obs;
+  final currentSector = 'human'.obs; // human | veterinary | office
 
   final upcomingAppointment = Rxn<AppointmentModel>();
   final topDoctors = <DoctorModel>[].obs;
@@ -43,10 +44,10 @@ class PatientDashboardController extends GetxController {
         bloodGroup.value = (profile.bloodGroup != null && profile.bloodGroup!.isNotEmpty) ? profile.bloodGroup! : 'N/A';
       }
 
-      final specs = await _firestoreService.getUsedSpecializations();
+      final specs = await _firestoreService.getUsedSpecializations(sector: currentSector.value);
       if (specs.isNotEmpty) specializations.assignAll(specs);
 
-      final doctors = await _firestoreService.getTopDoctors(limit: 5);
+      final doctors = await _firestoreService.getTopDoctors(sector: currentSector.value, limit: 5);
       topDoctors.value = doctors;
 
       final appointments = await _firestoreService.getPatientAppointments(user.uid);
@@ -122,6 +123,12 @@ class PatientDashboardController extends GetxController {
   void onSearchTapped() => changeTab(1); // Switch to Book Tab
   void onNotificationTapped() => Get.toNamed(AppRoutes.notifications);
   void onProfileTapped() => changeTab(3); // Switch to Profile Tab
+
+  void changeSector(String sector) {
+    currentSector.value = sector;
+    selectedSpecIndex.value = -1;
+    _loadDashboardData();
+  }
 
   Future<void> onRefresh() async => await _loadDashboardData();
 }

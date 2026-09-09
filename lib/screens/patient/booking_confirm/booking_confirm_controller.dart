@@ -96,8 +96,17 @@ class BookingConfirmController extends GetxController {
       final user = await _firestoreService.getUser(_auth.currentUser!.uid);
       final currentUserName = user?.name ?? 'Patient';
 
-      // Fetch Token and Patient Type
-      final token = await _bookingService.getNextTokenNumber(doctor.doctorId, selectedDateStr);
+      // Fetch Token, Waiting List and Patient Type
+      final tokenInfo = await _bookingService.getNextTokenInfo(
+        doctor.doctorId, 
+        selectedDateStr, 
+        doctor.maxDailyAppointments, 
+        doctor.reservedTokensCount
+      );
+      
+      final token = tokenInfo['tokenNumber'] as int;
+      final isWaitingList = tokenInfo['isWaitingList'] as bool;
+      
       final pType = await _bookingService.checkPatientType(_auth.currentUser!.uid, doctor.doctorId);
 
       final appt = AppointmentModel(
@@ -114,6 +123,8 @@ class BookingConfirmController extends GetxController {
         fee: doctor.consultationFee,
         isForSelf: isForSelf.value,
         tokenNumber: token,
+        isWaitingList: isWaitingList,
+        sector: doctor.sector,
         patientType: pType,
         patientDetails: isForSelf.value
             ? null

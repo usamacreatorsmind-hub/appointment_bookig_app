@@ -20,6 +20,8 @@ class AppointmentModel {
   final String? notes;
   final bool isReviewed; // Added to track if review is done
   final bool isForSelf;
+  final bool isWaitingList;
+  final String sector; // human | veterinary | office
   final int? tokenNumber; // Serial number for the day
   final String? patientType; // New | Old
   final Map<String, dynamic>? patientDetails;
@@ -49,6 +51,8 @@ class AppointmentModel {
     this.notes,
     this.isReviewed = false,
     this.isForSelf = true,
+    this.isWaitingList = false,
+    this.sector = 'human',
     this.tokenNumber,
     this.patientType,
     this.patientDetails,
@@ -92,6 +96,8 @@ class AppointmentModel {
       notes: map['notes'],
       isReviewed: map['isReviewed'] ?? false,
       isForSelf: map['isForSelf'] ?? true,
+      isWaitingList: map['isWaitingList'] ?? false,
+      sector: map['sector'] ?? 'human',
       tokenNumber: map['tokenNumber'] != null ? int.tryParse(map['tokenNumber'].toString()) : null,
       patientType: map['patientType'],
       patientDetails: map['patientDetails'],
@@ -121,6 +127,8 @@ class AppointmentModel {
       'notes': notes,
       'isReviewed': isReviewed,
       'isForSelf': isForSelf,
+      'isWaitingList': isWaitingList,
+      'sector': sector,
       'tokenNumber': tokenNumber,
       'patientType': patientType,
       'patientDetails': patientDetails,

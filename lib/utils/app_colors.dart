@@ -21,6 +21,14 @@ class AppColors {
   static const Color patientIcon = Color(0xFFE65100);
   static const Color receptionistBg = Color(0xFFF3E5F5);
   static const Color receptionistIcon = Color(0xFF7B1FA2);
+  
+  static const Color veterinaryBg = Color(0xFFE0F2F1);
+  static const Color veterinaryIcon = Color(0xFF00796B);
+  static const Color officeBg = Color(0xFFECEFF1);
+  static const Color officeIcon = Color(0xFF455A64);
+  static const Color visitorBg = Color(0xFFFFFDE7);
+  static const Color visitorIcon = Color(0xFFFBC02D);
+  
   static const Color textHint = Colors.grey;
 
   static const LinearGradient splashGradient = LinearGradient(

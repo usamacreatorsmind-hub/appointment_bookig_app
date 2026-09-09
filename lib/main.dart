@@ -5,11 +5,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'firebase_options.dart';
 
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
+    await GetStorage.init();
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
@@ -30,7 +32,7 @@ class DoctorAppointmentApp extends StatelessWidget {
     return SafeArea(
       top: false,
       child: GetMaterialApp(
-        title: 'Doctor Appointment App',
+        title: 'Appointment Booking App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorSchemeSeed: const Color(0xFF1565C0),
@@ -46,3 +48,4 @@ class DoctorAppointmentApp extends StatelessWidget {
     );
   }
 }
+

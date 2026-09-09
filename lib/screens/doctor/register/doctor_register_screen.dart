@@ -61,6 +61,9 @@ class DoctorRegisterScreen extends GetView<DoctorRegisterController> {
                         const SizedBox(height: 14),
                         _buildGenderSelector(),
 
+                        const SizedBox(height: 14),
+                        _buildSectorSelector(),
+
                         const SizedBox(height: 24),
                         _sectionTitle('Professional Details'),
                         const SizedBox(height: 12),
@@ -431,6 +434,30 @@ class DoctorRegisterScreen extends GetView<DoctorRegisterController> {
               _selectionOption('male', Icons.male, controller.selectedGender.value == 'male', (val) => controller.selectGender(val)),
               const SizedBox(width: 12),
               _selectionOption('female', Icons.female, controller.selectedGender.value == 'female', (val) => controller.selectGender(val)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectorSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Sector',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 8),
+        Obx(
+          () => Row(
+            children: [
+              _selectionOption('human', Icons.person_rounded, controller.selectedSector.value == 'human', (val) => controller.selectedSector.value = val),
+              const SizedBox(width: 8),
+              _selectionOption('veterinary', Icons.pets_rounded, controller.selectedSector.value == 'veterinary', (val) => controller.selectedSector.value = val),
+              const SizedBox(width: 8),
+              _selectionOption('office', Icons.business_rounded, controller.selectedSector.value == 'office', (val) => controller.selectedSector.value = val),
             ],
           ),
         ),

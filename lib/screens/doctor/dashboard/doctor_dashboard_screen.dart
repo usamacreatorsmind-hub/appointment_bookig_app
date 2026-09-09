@@ -276,12 +276,6 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
                   onTap: () => Get.toNamed(AppRoutes.doctorSelfProfile),
                 ),
                 _profileMenuItem(
-                  icon: Icons.support_agent_rounded,
-                  title: 'My Assistants',
-                  subtitle: 'Manage receptionists and staff',
-                  onTap: _showStaffBottomSheet,
-                ),
-                _profileMenuItem(
                   icon: Icons.calendar_month_rounded,
                   title: 'My Schedule',
                   subtitle: 'Manage availability and time slots',
@@ -305,82 +299,6 @@ class DoctorDashboardScreen extends GetView<DoctorDashboardController> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showStaffBottomSheet() {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('My Assistants / Staff', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                IconButton(
-                  onPressed: controller.goToAddReceptionist,
-                  icon: const Icon(Icons.person_add_alt_1_rounded, color: AppColors.primary),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Obx(() {
-              if (controller.receptionists.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Center(
-                    child: Text('No assistants added yet', style: TextStyle(color: Colors.grey.shade400)),
-                  ),
-                );
-              }
-              return Column(
-                children: controller.receptionists.map((staff) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.bgPage, borderRadius: BorderRadius.circular(16)),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            staff.name[0].toUpperCase(),
-                            style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(staff.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                              Text(staff.mobile, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
-                          onPressed: () => controller.removeReceptionist(staff.uid),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              );
-            }),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
     );
   }
 

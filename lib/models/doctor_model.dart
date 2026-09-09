@@ -11,6 +11,8 @@ class DoctorModel {
   final int experience;
   final double consultationFee;
   final double bookingFee; // Slot Booking Charge (Paid Online)
+  final int maxDailyAppointments;
+  final int reservedTokensCount;
   final String mobileNumber;
   final String email;
   final String gender;
@@ -24,6 +26,8 @@ class DoctorModel {
   final int totalReviews;
   final String status;
   final String practiceType; // 'hospital' or 'clinic'
+  final String sector; // 'human' | 'veterinary' | 'office'
+  final String category; // 'Ayurvedic' | 'Homeopathic' | 'General' etc.
   final String? clinicName;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -39,6 +43,8 @@ class DoctorModel {
     required this.experience,
     required this.consultationFee,
     this.bookingFee = 50.0,
+    this.maxDailyAppointments = 20,
+    this.reservedTokensCount = 5,
     required this.mobileNumber,
     required this.email,
     required this.gender,
@@ -52,6 +58,8 @@ class DoctorModel {
     this.totalReviews = 0,
     required this.status,
     this.practiceType = 'hospital',
+    this.sector = 'human',
+    this.category = 'General',
     this.clinicName,
     required this.createdAt,
     this.updatedAt,
@@ -106,6 +114,8 @@ class DoctorModel {
       experience: int.tryParse(map['experience']?.toString() ?? '0') ?? 0,
       consultationFee: double.tryParse(map['consultationFee']?.toString() ?? '0.0') ?? 0.0,
       bookingFee: double.tryParse(map['bookingFee']?.toString() ?? '50.0') ?? 50.0,
+      maxDailyAppointments: int.tryParse(map['maxDailyAppointments']?.toString() ?? '20') ?? 20,
+      reservedTokensCount: int.tryParse(map['reservedTokensCount']?.toString() ?? '5') ?? 5,
       mobileNumber: map['mobileNumber']?.toString() ?? '',
       email: map['email']?.toString() ?? '',
       gender: map['gender']?.toString() ?? '',
@@ -119,6 +129,8 @@ class DoctorModel {
       totalReviews: int.tryParse(map['totalReviews']?.toString() ?? '0') ?? 0,
       status: (map['status']?.toString() ?? 'active').toLowerCase(),
       practiceType: map['practiceType']?.toString() ?? 'hospital',
+      sector: map['sector']?.toString() ?? 'human',
+      category: map['category']?.toString() ?? 'General',
       clinicName: map['clinicName']?.toString(),
       createdAt: _parseDateTime(map['createdAt']),
       updatedAt: _parseDateTimeNullable(map['updatedAt']),
@@ -137,6 +149,8 @@ class DoctorModel {
       'experience': experience,
       'consultationFee': consultationFee,
       'bookingFee': bookingFee,
+      'maxDailyAppointments': maxDailyAppointments,
+      'reservedTokensCount': reservedTokensCount,
       'mobileNumber': mobileNumber,
       'email': email,
       'gender': gender,
@@ -151,6 +165,8 @@ class DoctorModel {
       'totalReviews': totalReviews,
       'status': status,
       'practiceType': practiceType,
+      'sector': sector,
+      'category': category,
       'clinicName': clinicName,
       'createdAt': createdAt,
       'updatedAt': FieldValue.serverTimestamp(),

@@ -51,10 +51,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDtuTK3rNu2OAMlDgqrvXbP99rB-9JB2bw',
-    appId: '1:1070683249385:android:d588293854aa92026f6e78',
-    messagingSenderId: '1070683249385',
-    projectId: 'ayuveda-care-42292',
-    storageBucket: 'ayuveda-care-42292.firebasestorage.app',
+    apiKey: 'AIzaSyCottg8PUEo5BV99jZlWzzJFlJueTk5h60',
+    appId: '1:373698296057:android:4402a8d12053eecc338a28',
+    messagingSenderId: '373698296057',
+    projectId: 'appointmentbookingapp-d7c29',
+    storageBucket: 'appointmentbookingapp-d7c29.firebasestorage.app',
   );
 }

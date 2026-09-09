@@ -77,6 +77,8 @@ class PaymentController extends GetxController {
       final result = await callable.call({
         'amount': (totalToPay * 100).toInt(), // Convert to Paisa
         'currency': 'INR',
+        'appointmentId': appointmentId,
+        'patientId': _auth.currentUser!.uid,
       });
 
       final orderId = result.data['id'];

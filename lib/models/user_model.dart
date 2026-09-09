@@ -8,9 +8,9 @@ class UserModel {
   final String name;
   final String mobile;
   final String email;
-  final String role; // super_admin | hospital_admin | doctor | patient
+  final String role; // super_admin | doctor | patient | veterinary_doctor | office_staff | pet_owner | visitor
   final String status; // active | inactive
-  final String? hospitalId; // hospital_admin + doctor ke liye
+  final String? hospitalId; // doctor ke liye
   final String? doctorId; // doctor ke liye
   final String? patientId; // patient ke liye
   final String? fcmToken; // Push notification token

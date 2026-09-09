@@ -1,9 +1,10 @@
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -23,10 +24,12 @@ setGlobalOptions({ region: "us-central1" });
 exports.createRazorpayOrder = onCall(async (request) => {
     const amount = request.data.amount; // In Paisa (e.g. 5000 for ₹50)
     const currency = request.data.currency || "INR";
+    const appointmentId = request.data.appointmentId;
+    const patientId = request.data.patientId;
     const receipt = `receipt_${Date.now()}`;
 
-    if (!amount) {
-        throw new Error("Amount is required");
+    if (!amount || !appointmentId || !patientId) {
+        throw new HttpsError("invalid-argument", "Amount, appointmentId, and patientId are required");
     }
 
     try {
@@ -34,11 +37,15 @@ exports.createRazorpayOrder = onCall(async (request) => {
             amount: amount,
             currency: currency,
             receipt: receipt,
+            notes: {
+                appointmentId: appointmentId,
+                patientId: patientId
+            }
         });
         return order;
     } catch (error) {
         console.error("Razorpay Order Error:", error);
-        throw new Error("Failed to create Razorpay order");
+        throw new HttpsError("internal", "Failed to create Razorpay order");
     }
 });
 
@@ -94,6 +101,78 @@ exports.onappointmentstatusupdate = onDocumentUpdated("appointments/{appointment
 
 const MSG91_AUTH_KEY = "566174ACoxByk72v6a955369P1";
 const MSG91_TEMPLATE_ID = "6a95551467221b0f4e010bb2";
+const WEBHOOK_SECRET = "AyuVeda_Secret_2024";
+
+/**
+ * Razorpay Webhook to verify and confirm payments
+ */
+exports.razorpayWebhook = onRequest(async (req, res) => {
+    const signature = req.headers["x-razorpay-signature"];
+    const body = JSON.stringify(req.body);
+
+    const expectedSignature = crypto
+        .createHmac("sha256", WEBHOOK_SECRET)
+        .update(body)
+        .digest("hex");
+
+    if (signature !== expectedSignature) {
+        console.error("Webhook Signature Mismatch!");
+        return res.status(400).send("Invalid signature");
+    }
+
+    const event = req.body.event;
+    console.log(`Received Razorpay Webhook Event: ${event}`);
+
+    if (event === "payment.captured") {
+        const paymentData = req.body.payload.payment.entity;
+        const orderData = req.body.payload.order ? req.body.payload.order.entity : null;
+
+        // Extract metadata from notes
+        const notes = paymentData.notes || (orderData ? orderData.notes : {});
+        const appointmentId = notes.appointmentId;
+        const patientId = notes.patientId;
+
+        if (appointmentId) {
+            console.log(`Processing successful payment for Appointment: ${appointmentId}`);
+
+            try {
+                const batch = db.batch();
+
+                // 1. Update Appointment
+                const apptRef = db.collection('appointments').doc(appointmentId);
+                batch.update(apptRef, {
+                    status: 'Confirmed',
+                    paymentStatus: 'Booking Charge Paid',
+                    bookingCharge: paymentData.amount / 100, // Convert paisa to INR
+                    transactionId: paymentData.id,
+                    razorpayOrderId: paymentData.order_id,
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 2. Create Payment Record
+                const paymentRef = db.collection('payments').doc();
+                batch.set(paymentRef, {
+                    appointmentId: appointmentId,
+                    patientId: patientId || 'unknown',
+                    amount: paymentData.amount / 100,
+                    paymentMethod: paymentData.method,
+                    transactionId: paymentData.id,
+                    razorpayOrderId: paymentData.order_id,
+                    paymentDate: new Date().toISOString(),
+                    status: 'Success',
+                    createdAt: admin.firestore.FieldValue.serverTimestamp()
+                });
+
+                await batch.commit();
+                console.log(`Successfully verified and updated payment for ${appointmentId}`);
+            } catch (err) {
+                console.error("Error updating Firestore via Webhook:", err);
+            }
+        }
+    }
+
+    res.status(200).send("ok");
+});
 
 /**
  * Trigger: Send OTP via MSG91

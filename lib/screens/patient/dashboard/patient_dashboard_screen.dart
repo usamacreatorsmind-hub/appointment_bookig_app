@@ -45,6 +45,7 @@ class PatientDashboardScreen extends StatelessWidget {
               child: CustomScrollView(
                 slivers: [
                   _buildTopSection(controller),
+                  SliverToBoxAdapter(child: _buildSectorSelector(controller)),
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 50),
                     sliver: SliverList(
@@ -106,6 +107,53 @@ class PatientDashboardScreen extends StatelessWidget {
               _buildSearchBar(controller),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectorSelector(PatientDashboardController controller) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Obx(
+        () => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _sectorChip(controller, 'human', 'Human', Icons.person_rounded),
+            _sectorChip(controller, 'veterinary', 'Veterinary', Icons.pets_rounded),
+            _sectorChip(controller, 'office', 'Office', Icons.business_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectorChip(PatientDashboardController controller, String sector, String label, IconData icon) {
+    final bool isSelected = controller.currentSector.value == sector;
+    return GestureDetector(
+      onTap: () => controller.changeSector(sector),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.primaryBorder),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: isSelected ? Colors.white : AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : AppColors.textPrimary,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -226,11 +274,18 @@ class PatientDashboardScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
-              SizedBox(width: 10),
-              Text('Search doctor, symptom, disease...', style: TextStyle(fontSize: 13, color: Colors.grey)),
+              const Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text('Search doctor, symptom, disease...', style: TextStyle(fontSize: 13, color: Colors.grey)),
+              ),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(color: AppColors.primarySurface, borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.mic_rounded, color: AppColors.primary, size: 18),
+              ),
             ],
           ),
         ),

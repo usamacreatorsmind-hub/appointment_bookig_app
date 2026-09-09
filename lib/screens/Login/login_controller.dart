@@ -8,7 +8,15 @@ import '../../utils/helper.dart';
 import '../role_selection/role_selection_controller.dart';
 import '../../services/notification_service.dart';
 
-enum LoginRole { hospitalAdmin, doctor, patient, receptionist }
+enum LoginRole { 
+  doctor, 
+  patient, 
+  receptionist, 
+  veterinaryDoctor, 
+  petOwner, 
+  officeStaff, 
+  visitor 
+}
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -31,9 +39,6 @@ class LoginController extends GetxController {
       if (args['role'] is UserRole) {
         final UserRole passedRole = args['role'] as UserRole;
         switch (passedRole) {
-          case UserRole.hospitalAdmin:
-            selectedRole.value = LoginRole.hospitalAdmin;
-            break;
           case UserRole.doctor:
             selectedRole.value = LoginRole.doctor;
             break;
@@ -42,6 +47,18 @@ class LoginController extends GetxController {
             break;
           case UserRole.receptionist:
             selectedRole.value = LoginRole.receptionist;
+            break;
+          case UserRole.veterinaryDoctor:
+            selectedRole.value = LoginRole.veterinaryDoctor;
+            break;
+          case UserRole.petOwner:
+            selectedRole.value = LoginRole.petOwner;
+            break;
+          case UserRole.officeStaff:
+            selectedRole.value = LoginRole.officeStaff;
+            break;
+          case UserRole.visitor:
+            selectedRole.value = LoginRole.visitor;
             break;
         }
       } else if (args['role'] is LoginRole) {
@@ -123,10 +140,8 @@ class LoginController extends GetxController {
 
           if (userData.role == 'patient') {
             Get.offAllNamed(AppRoutes.patientDashboard);
-          } else if (userData.role == 'doctor') {
+          } else if (userData.role == 'doctor' || userData.role == 'veterinary_doctor') {
             Get.offAllNamed(AppRoutes.doctorDashboard);
-          } else if (userData.role == 'hospital_admin') {
-            Get.offAllNamed(AppRoutes.hospitalDashboard);
           } else if (userData.role == 'receptionist') {
             Get.offAllNamed(AppRoutes.receptionistDashboard);
           } else {
@@ -181,14 +196,20 @@ class LoginController extends GetxController {
 
   String _getRoleString(LoginRole role) {
     switch (role) {
-      case LoginRole.hospitalAdmin:
-        return 'hospital_admin';
       case LoginRole.doctor:
         return 'doctor';
       case LoginRole.patient:
         return 'patient';
       case LoginRole.receptionist:
         return 'receptionist';
+      case LoginRole.veterinaryDoctor:
+        return 'veterinary_doctor';
+      case LoginRole.petOwner:
+        return 'pet_owner';
+      case LoginRole.officeStaff:
+        return 'office_staff';
+      case LoginRole.visitor:
+        return 'visitor';
       default:
         return 'patient';
     }

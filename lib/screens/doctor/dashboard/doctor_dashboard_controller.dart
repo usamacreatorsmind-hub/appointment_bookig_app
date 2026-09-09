@@ -31,7 +31,6 @@ class DoctorDashboardController extends GetxController {
 
   final doctorProfile = Rxn<DoctorModel>();
   final appointments = <AppointmentModel>[].obs;
-  final receptionists = <UserModel>[].obs;
   final allPatients = <UserModel>[].obs;
   final filteredPatients = <UserModel>[].obs;
   final isPatientsLoading = false.obs;
@@ -94,16 +93,10 @@ class DoctorDashboardController extends GetxController {
           final userModel = await _firestoreService.getUser(user.uid);
           if (userModel?.hospitalId != null && userModel!.hospitalId!.isNotEmpty) {
             doctorProfile.value = doctorProfile.value!.copyWith(hospitalId: userModel.hospitalId);
-          } else {
-            // Check if they are a hospital admin directly
-            final hospital = await _firestoreService.getHospitalByAdminUid(user.uid);
-            if (hospital != null) {
-              doctorProfile.value = doctorProfile.value!.copyWith(hospitalId: hospital.hospitalId);
-            }
           }
         }
 
-        await Future.wait([loadAppointments(selectedDate.value), loadReceptionists()]);
+        await loadAppointments(selectedDate.value);
       } else {
         AppSnackBar.show('Doctor profile not found in database.');
       }
@@ -290,59 +283,6 @@ class DoctorDashboardController extends GetxController {
       nextAppointment.value = appointments.firstWhereOrNull((a) => a.status == 'Confirmed' || a.status == 'Arrived');
     } else {
       nextAppointment.value = null;
-    }
-  }
-
-  Future<void> loadReceptionists() async {
-    if (doctorProfile.value == null) return;
-    try {
-      final list = await _firestoreService.getReceptionistsByDoctor(doctorProfile.value!.doctorId);
-      receptionists.assignAll(list);
-    } catch (e) {
-      print("Error loading receptionists: $e");
-    }
-  }
-
-  Future<void> removeReceptionist(String uid) async {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Remove Staff'),
-        content: const Text('Are you sure you want to remove this receptionist? They will no longer be able to log in.'),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              isLoading.value = true;
-              update();
-              try {
-                await _firestoreService.deleteUser(uid);
-                await loadReceptionists();
-                AppSnackBar.show('Staff removed successfully');
-              } catch (e) {
-                AppSnackBar.show('Error: $e');
-              } finally {
-                isLoading.value = false;
-                update();
-              }
-            },
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> goToAddReceptionist() async {
-    final hId = doctorProfile.value?.hospitalId;
-    final dId = doctorProfile.value?.doctorId;
-    if (hId != null && hId.isNotEmpty) {
-      final result = await Get.toNamed(AppRoutes.addReceptionist, arguments: {'hospitalId': hId, 'doctorId': dId});
-      if (result == true) {
-        await loadReceptionists();
-      }
-    } else {
-      AppSnackBar.show('Hospital/Clinic ID not found in your profile.');
     }
   }
 

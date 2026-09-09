@@ -10,6 +10,9 @@ import '../screens/Login/login_binding.dart';
 import '../screens/Login/login_screen.dart';
 import '../screens/otp/otp_binding.dart';
 import '../screens/otp/otp_screen.dart';
+import '../screens/onboarding/language_selection_screen.dart';
+import '../screens/onboarding/location_permission_screen.dart';
+import '../screens/onboarding/terms_conditions_screen.dart';
 import '../screens/register/register_binding.dart';
 import '../screens/register/register_screen.dart';
 import '../screens/doctor/register/doctor_register_binding.dart';
@@ -50,28 +53,6 @@ import '../screens/doctor/profile/doctor_self_profile_binding.dart';
 import '../screens/doctor/profile/doctor_self_profile_screen.dart';
 import '../screens/doctor/reviews/doctor_reviews_binding.dart';
 import '../screens/doctor/reviews/doctor_reviews_screen.dart';
-import '../screens/hospital/dashboard/hospital_dashboard_binding.dart';
-import '../screens/hospital/dashboard/hospital_dashboard_screen.dart';
-import '../screens/hospital/add_doctor/add_doctor_binding.dart';
-import '../screens/hospital/add_doctor/add_doctor_screen.dart';
-import '../screens/hospital/profile/hospital_profile_binding.dart';
-import '../screens/hospital/profile/hospital_profile_screen.dart';
-import '../screens/hospital/appointments/hospital_appointments_binding.dart';
-import '../screens/hospital/appointments/hospital_appointments_screen.dart';
-import '../screens/hospital/reports/hospital_reports_binding.dart';
-import '../screens/hospital/reports/hospital_reports_screen.dart';
-import '../screens/hospital/join_requests/join_requests_binding.dart';
-import '../screens/hospital/join_requests/join_requests_screen.dart';
-import '../screens/hospital/departments/hospital_departments_binding.dart';
-import '../screens/hospital/departments/hospital_departments_screen.dart';
-import '../screens/hospital/add_receptionist/add_receptionist_binding.dart';
-import '../screens/hospital/add_receptionist/add_receptionist_screen.dart';
-import '../screens/receptionist/dashboard/receptionist_dashboard_binding.dart';
-import '../screens/receptionist/dashboard/receptionist_dashboard_screen.dart';
-import '../screens/receptionist/appointments/receptionist_appointments_binding.dart';
-import '../screens/receptionist/appointments/receptionist_appointments_screen.dart';
-import '../screens/receptionist/walk_in_booking/walk_in_booking_binding.dart';
-import '../screens/receptionist/walk_in_booking/walk_in_booking_screen.dart';
 import '../screens/notifications/notifications_binding.dart';
 import '../screens/notifications/notifications_screen.dart';
 import 'app_routes.dart';
@@ -117,6 +98,18 @@ class AppPages {
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordScreen(),
       binding: ForgotPasswordBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.languageSelection,
+      page: () => const LanguageSelectionScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.locationPermission,
+      page: () => const LocationPermissionScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.termsConditions,
+      page: () => const TermsConditionsScreen(),
     ),
     GetPage(
       name: AppRoutes.profileSetup,
@@ -202,61 +195,6 @@ class AppPages {
       name: AppRoutes.doctorReviews,
       page: () => const DoctorReviewsScreen(),
       binding: DoctorReviewsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalDashboard,
-      page: () => const HospitalDashboardScreen(),
-      binding: HospitalDashboardBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.addDoctor,
-      page: () => const AddDoctorScreen(),
-      binding: AddDoctorBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalProfile,
-      page: () => const HospitalProfileScreen(),
-      binding: HospitalProfileBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalAppointments,
-      page: () => const HospitalAppointmentsScreen(),
-      binding: HospitalAppointmentsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalReports,
-      page: () => const HospitalReportsScreen(),
-      binding: HospitalReportsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalJoinRequests,
-      page: () => const JoinRequestsScreen(),
-      binding: JoinRequestsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.hospitalDepartments,
-      page: () => const HospitalDepartmentsScreen(),
-      binding: HospitalDepartmentsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.addReceptionist,
-      page: () => const AddReceptionistScreen(),
-      binding: AddReceptionistBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.receptionistDashboard,
-      page: () => const ReceptionistDashboardScreen(),
-      binding: ReceptionistDashboardBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.receptionistAppointments,
-      page: () => const ReceptionistAppointmentsScreen(),
-      binding: ReceptionistAppointmentsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.walkInBooking,
-      page: () => const WalkInBookingScreen(),
-      binding: WalkInBookingBinding(),
     ),
     GetPage(
       name: AppRoutes.notifications,

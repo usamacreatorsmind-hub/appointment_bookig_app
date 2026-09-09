@@ -5,6 +5,8 @@ import '../../../Repository/FirestoreService.dart';
 import '../../../models/doctor_model.dart';
 import '../../../utils/app_routes.dart';
 import '../../../utils/helper.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../dashboard/patient_dashboard_controller.dart';
 
 class DoctorSearchController extends GetxController {
   final FirestoreService _firestoreService = FirestoreService();
@@ -29,6 +31,10 @@ class DoctorSearchController extends GetxController {
   final suggestions = <String>[].obs;
   final maxFee = 5000.0.obs;
   final isSuggestionsVisible = false.obs;
+
+  // Voice Search
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  final isListening = false.obs;
 
   // Debounce query
   final searchQuery = "".obs;
@@ -108,7 +114,13 @@ class DoctorSearchController extends GetxController {
     update();
 
     try {
+      String? sector;
+      try {
+        sector = Get.find<PatientDashboardController>().currentSector.value;
+      } catch (e) {}
+
       final result = await _firestoreService.searchDoctorsPaginated(
+        sector: sector,
         name: searchQuery.value.trim(),
         specialization: selectedSpecialization.value,
         maxFee: maxFee.value,
@@ -144,7 +156,13 @@ class DoctorSearchController extends GetxController {
     update();
 
     try {
+      String? sector;
+      try {
+        sector = Get.find<PatientDashboardController>().currentSector.value;
+      } catch (e) {}
+
       final result = await _firestoreService.searchDoctorsPaginated(
+        sector: sector,
         name: searchQuery.value.trim(),
         specialization: selectedSpecialization.value,
         maxFee: maxFee.value,
@@ -183,6 +201,32 @@ class DoctorSearchController extends GetxController {
     selectedSpecialization.value = '';
     maxFee.value = 5000.0;
     searchDoctors();
+  }
+
+  Future<void> toggleVoiceSearch() async {
+    if (isListening.value) {
+      _speech.stop();
+      isListening.value = false;
+    } else {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          if (val == 'done' || val == 'notListening') isListening.value = false;
+        },
+        onError: (val) => print('Speech Error: $val'),
+      );
+      if (available) {
+        isListening.value = true;
+        _speech.listen(onResult: (val) {
+          searchController.text = val.recognizedWords;
+          searchQuery.value = val.recognizedWords;
+          if (val.finalResult) {
+            isListening.value = false;
+            searchDoctors();
+          }
+        });
+      }
+    }
+    update();
   }
 
   void goToDoctorProfile(DoctorModel doctor) {

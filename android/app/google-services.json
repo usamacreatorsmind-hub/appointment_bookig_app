@@ -1,40 +1,21 @@
 {
   "project_info": {
-    "project_number": "1070683249385",
-    "project_id": "ayuveda-care-42292",
-    "storage_bucket": "ayuveda-care-42292.firebasestorage.app"
+    "project_number": "373698296057",
+    "project_id": "appointmentbookingapp-d7c29",
+    "storage_bucket": "appointmentbookingapp-d7c29.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1070683249385:android:3c07d50270501dff6f6e78",
+        "mobilesdk_app_id": "1:373698296057:android:4402a8d12053eecc338a28",
         "android_client_info": {
-          "package_name": "com.ayuvedacare.app"
+          "package_name": "com.appointment_booking.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDtuTK3rNu2OAMlDgqrvXbP99rB-9JB2bw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1070683249385:android:d588293854aa92026f6e78",
-        "android_client_info": {
-          "package_name": "com.ayuvedacare.appcare"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDtuTK3rNu2OAMlDgqrvXbP99rB-9JB2bw"
+          "current_key": "AIzaSyCottg8PUEo5BV99jZlWzzJFlJueTk5h60"
         }
       ],
       "services": {
